@@ -1,7 +1,7 @@
 # cseperkepapp.github.io
 Animation Playground
 
-# 🧪 Animation Laboratory
+# 🧪 Animation Playground
 *A collection of interactive web experiments exploring motion, physics, and creative coding*
 
 ![Experiments](https://img.shields.io/badge/experiments-1+-brightgreen.svg)
