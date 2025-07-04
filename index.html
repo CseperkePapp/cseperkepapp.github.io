@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cseperke Papp - Animation Playground</title>
+    <link href="https://fonts.googleapis.com/css2?family=Overlock:wght@400;700&family=Cormorant:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-bg: #2a2a2a;
+            --darker-bg: #1e1e1e;
+            --teal: #5a8a8a;
+            --light-blue: #7ab3d3;
+            --off-white: #f5f3f0;
+            --light-gray: #c5c5c5;
+            --medium-gray: #8a8a8a;
+            --sage-green: #a8b5a8;
+            --accent-blue: #6bb6c7;
+        }
+
+        body {
+            font-family: 'Overlock', cursive;
+            line-height: 1.6;
+            color: var(--off-white);
+            background-color: var(--dark-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: var(--darker-bg);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-radius: 0 0 20px 20px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+        }
+
+        .logo {
+            font-family: 'Cormorant', serif;
+            font-size: 1.9rem;
+            font-weight: 600;
+            color: var(--sage-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--light-gray);
+            font-weight: 400;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-blue);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 100px;
+            padding: 3rem 0;
+        }
+
+        .center-link {
+            text-align: center;
+        }
+
+        .center-link a {
+            font-family: 'Cormorant', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .center-link a:hover {
+            color: var(--off-white);
+            background: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        footer {
+            background: var(--darker-bg);
+            color: var(--light-gray);
+            text-align: center;
+            padding: 3rem 0;
+            border-radius: 30px 30px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+        }
+
+        .footer-content {
+            font-family: 'Cormorant', serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-content p:first-child {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .social-links a {
+            color: var(--light-gray);
+            text-decoration: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .social-links a:hover {
+            background: var(--accent-blue);
+            color: var(--off-white);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .center-link a {
+                font-size: 2rem;
+                letter-spacing: 1px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">Cseperke Papp</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="center-link">
+            <a href="#" aria-label="Rising Info Snippets">Rising Info Snippets</a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Cseperke Papp</p>
+                 </div>
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/cseperkepapp/" aria-label="LinkedIn">LinkedIn</a>
+                <a href="https://www.instagram.com/cseperke.papp/" aria-label="Instagram">Instagram</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
