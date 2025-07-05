@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rising Info Cards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cera Basic', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            background-attachment: fixed;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .container::after {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .header {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #ffffff, #E6E6FA, #D8BFD8);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Desktop header sizing */
+        @media (min-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                letter-spacing: 2px;
+            }
+        }
+
+        .floating-section {
+            position: absolute;
+            padding: 25px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(190, 166, 127, 0.2);
+            backdrop-filter: blur(8px);
+            cursor: pointer;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .floating-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #bea67f, transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* 5 depth layers with dramatic differences - responsive sizing */
+        .floating-section.back {
+            width: 160px;
+            z-index: 1;
+            opacity: 0.6;
+            padding: 15px 12px;
+        }
+
+        .floating-section.back .section-content {
+            font-size: 0.6rem !important;
+            line-height: 1.4;
+        }
+
+        .floating-section.back .section-title {
+            font-size: 0.9rem !important;
+        }
+
+        .floating-section.middle-back {
+            width: 180px;
+            z-index: 2;
+            opacity: 0.7;
+            padding: 18px 15px;
+        }
+
+        .floating-section.middle-back .section-content {
+            font-size: 0.7rem !important;
+            line-height: 1.5;
+        }
+
+        .floating-section.middle-back .section-title {
+            font-size: 1.0rem !important;
+        }
+
+        .floating-section.middle {
+            width: 200px;
+            z-index: 4;
+            opacity: 0.8;
+            padding: 20px 16px;
+        }
+
+        .floating-section.middle .section-content {
+            font-size: 0.8rem !important;
+            line-height: 1.5;
+        }
+
+        .floating-section.middle .section-title {
+            font-size: 1.1rem !important;
+        }
+
+        .floating-section.middle-front {
+            width: 220px;
+            z-index: 5;
+            opacity: 0.9;
+            padding: 22px 18px;
+        }
+
+        .floating-section.middle-front .section-content {
+            font-size: 0.85rem !important;
+            line-height: 1.6;
+        }
+
+        .floating-section.middle-front .section-title {
+            font-size: 1.2rem !important;
+        }
+
+        .floating-section.front {
+            width: 240px;
+            z-index: 6;
+            opacity: 1;
+            padding: 25px 20px;
+        }
+
+        .floating-section.front .section-content {
+            font-size: 0.9rem !important;
+            line-height: 1.7;
+        }
+
+        .floating-section.front .section-title {
+            font-size: 1.4rem !important;
+        }
+
+        /* Desktop sizes */
+        @media (min-width: 768px) {
+            .floating-section.back {
+                width: 200px;
+                padding: 20px 15px;
+            }
+
+            .floating-section.back .section-content {
+                font-size: 0.7rem !important;
+            }
+
+            .floating-section.back .section-title {
+                font-size: 1.0rem !important;
+            }
+
+            .floating-section.middle-back {
+                width: 230px;
+                padding: 22px 18px;
+            }
+
+            .floating-section.middle-back .section-content {
+                font-size: 0.8rem !important;
+            }
+
+            .floating-section.middle-back .section-title {
+                font-size: 1.1rem !important;
+            }
+
+            .floating-section.middle {
+                width: 260px;
+                padding: 25px 20px;
+            }
+
+            .floating-section.middle .section-content {
+                font-size: 0.9rem !important;
+            }
+
+            .floating-section.middle .section-title {
+                font-size: 1.2rem !important;
+            }
+
+            .floating-section.middle-front {
+                width: 290px;
+                padding: 28px 22px;
+            }
+
+            .floating-section.middle-front .section-content {
+                font-size: 1.0rem !important;
+            }
+
+            .floating-section.middle-front .section-title {
+                font-size: 1.4rem !important;
+            }
+
+            .floating-section.front {
+                width: 320px;
+                padding: 30px 25px;
+            }
+
+            .floating-section.front .section-content {
+                font-size: 1.1rem !important;
+            }
+
+            .floating-section.front .section-title {
+                font-size: 1.6rem !important;
+            }
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, #ffffff, #E6E6FA);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            font-weight: 400;
+            font-size: 1.3rem;
+        }
+
+        .section-content {
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        /* Single floating animation - cards visible until 75% across screen */
+        @keyframes floatUp {
+            0% { transform: translateY(150vh); opacity: 0; }
+            27% { opacity: 1; }
+            69% { opacity: 1; }
+            78% { opacity: 0; }
+            100% { transform: translateY(-30vh); opacity: 0; }
+        }
+
+        /* Simple click effect */
+        .floating-section.clicked {
+            transform: scale(1.02, 0.96) rotateX(2deg) rotateY(2deg);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(190, 166, 127, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        /* Simple pause effect */
+        .floating-section.paused {
+            animation-play-state: paused;
+            transform: scale(1.03);
+            box-shadow: 0 10px 20px rgba(190, 166, 127, 0.3);
+            border-color: rgba(190, 166, 127, 0.5);
+        }
+
+        .instructions {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #bea67f;
+            font-size: 0.7rem;
+            text-align: center;
+            z-index: 7;
+        }
+
+        @media (min-width: 768px) {
+            .instructions {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Quantum Realms</h1>
+            <p class="subtitle">Journey Through Space & Time</p>
+        </div>
+
+        <div class="floating-section" id="section1">
+            <h2 class="section-title">Wave-Particle Duality</h2>
+            <p class="section-content">
+                Light dances between being and becoming,<br>
+        Wave ripples through the void, then crystallizes<br>
+        Into particles of pure luminescence—<br>
+        Reality itself refuses definition.
+            </p>
+        </div>
+
+        <div class="floating-section" id="section2">
+            <h2 class="section-title">Cosmic Energy Fields</h2>
+            <p class="section-content">In every breath of empty space<br>
+        Lives an ocean of invisible fire,<br>
+        Where phantom fields birth matter<br>
+        And silence hums with creation's song.
+            </p>
+        </div>
+
+        <div class="floating-section" id="section3">
+            <h2 class="section-title">Spacetime Curvature</h2>
+            <p class="section-content">Stars and planets carve their signatures<br>
+        Into the fabric of existence itself,<br>
+        Bending time and space like lovers' arms—<br>
+        Gravity is geometry made manifest.
+            </p>
+        </div>
+
+        <div class="floating-section" id="section4">
+            <h2 class="section-title">Quantum Entanglement</h2>
+            <p class="section-content">
+                Particles become mysteriously connected across vast distances, sharing information instantaneously across the cosmos.
+            </p>
+        </div>
+
+        <div class="floating-section" id="section5">
+            <h2 class="section-title">Dark Matter</h2>
+            <p class="section-content">Two particles whisper across the void,<br>
+        Their fates entwined beyond all distance,<br>
+        Speaking in languages older than light—<br>
+        The universe conspires in perfect synchrony.
+            </p>
+        </div>
+    </div>
+
+    <div class="instructions">
+        ↑ Fully responsive • Click to pause ↑
+    </div>
+
+    <script>
+        class FloatingSection {
+            constructor(element) {
+                this.element = element;
+                this.isPaused = false;
+                this.isAnimating = false;
+                this.duration = 20;
+                this.delay = 0;
+                
+                this.init();
+            }
+
+            init() {
+                const index = parseInt(this.element.id.replace('section', '')) - 1;
+                const positions = ['30%', '40%', '50%', '60%', '70%'];
+                const delays = [0, 3, 6, 9, 12];
+                
+                this.element.style.left = positions[index];
+                this.element.style.transform = 'translateY(150vh)';
+                this.delay = delays[index];
+                
+                this.assignRandomLayer();
+                this.element.addEventListener('click', () => this.togglePause());
+                
+                setTimeout(() => this.startAnimation(), this.delay * 1000);
+            }
+
+            assignRandomLayer() {
+                const layers = ['back', 'middle-back', 'middle', 'middle-front', 'front'];
+                const randomIndex = Math.floor(Math.random() * layers.length);
+                const selectedLayer = layers[randomIndex];
+                
+                this.element.classList.remove(...layers);
+                this.element.classList.add(selectedLayer);
+                
+                // Proper speed differences for parallax effect
+                const speedRanges = {
+                    'back': Math.random() * 6 + 35,        // 35-41 seconds (slowest, distant)
+                    'middle-back': Math.random() * 4 + 28,  // 28-32 seconds
+                    'middle': Math.random() * 4 + 22,       // 22-26 seconds  
+                    'middle-front': Math.random() * 4 + 16, // 16-20 seconds
+                    'front': Math.random() * 4 + 12         // 12-16 seconds (fastest, closest)
+                };
+                
+                this.duration = speedRanges[selectedLayer];
+            }
+
+            togglePause() {
+                this.element.classList.add('clicked');
+                setTimeout(() => this.element.classList.remove('clicked'), 200);
+
+                if (this.isPaused) {
+                    this.resume();
+                } else {
+                    this.pause();
+                }
+            }
+
+            pause() {
+                this.isPaused = true;
+                this.element.classList.add('paused');
+                this.element.style.animationPlayState = 'paused';
+            }
+
+            resume() {
+                this.isPaused = false;
+                this.element.classList.remove('paused');
+                this.element.style.animationPlayState = 'running';
+            }
+
+            startAnimation() {
+                if (this.isAnimating) return;
+                
+                this.isAnimating = true;
+                this.element.style.animation = `floatUp ${this.duration}s linear`;
+                
+                this.element.addEventListener('animationend', () => {
+                    if (!this.isPaused) {
+                        this.isAnimating = false;
+                        setTimeout(() => this.restartAnimation(), 1000 + Math.random() * 2000);
+                    }
+                }, { once: true });
+            }
+
+            restartAnimation() {
+                if (this.isPaused) return;
+                
+                this.assignRandomLayer();
+                this.element.style.animation = 'none';
+                this.element.offsetHeight;
+                this.startAnimation();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            [1,2,3,4,5].forEach(i => new FloatingSection(document.getElementById(`section${i}`)));
+        });
+    </script>
+</body>
+</html>
