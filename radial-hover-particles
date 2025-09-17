@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowing Particles Effect</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #00021a; /* Dark blue-black background */
+        }
+        canvas {
+            display: block;
+        }
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            pointer-events: none; /* Make text non-interactive */
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <div class="info">Move your mouse to interact with the particles</div>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas to full screen
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // --- Configuration ---
+        const PARTICLE_COUNT = 800;
+        const CONNECT_DISTANCE = 100; // Not used in this style, but good to have
+        const MOUSE_INTERACTION_RADIUS = 150;
+        // Color palette inspired by the provided image
+        const COLORS = ['#FFD700', '#FFA500', '#ADD8E6', '#FFFFFF', '#F0E68C', '#DAA520'];
+
+        let particlesArray = [];
+        const mouse = {
+            x: null,
+            y: null,
+        };
+
+        // --- Event Listeners ---
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init(); // Re-initialize particles on resize
+        });
+        
+        // --- Particle Class ---
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+                this.color = color;
+                this.baseX = this.x; // Store original x for wave effect
+                this.speed = Math.random() * 0.5 + 0.1;
+                this.waveFactor = Math.random() * 2 + 1; // How much it waves
+            }
+
+            // Method to draw individual particle
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                // Create a subtle glow effect
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            // Method to update particle's position
+            update() {
+                // Reset shadow before drawing to avoid artifacts
+                ctx.shadowBlur = 0;
+                
+                // --- Edge Detection ---
+                // If particle goes off screen, wrap it around to the other side
+                if (this.x > canvas.width + this.size) {
+                    this.x = -this.size;
+                }
+                if (this.x < -this.size) {
+                    this.x = canvas.width + this.size;
+                }
+                if (this.y > canvas.height + this.size) {
+                    this.y = -this.size;
+                }
+                if (this.y < -this.size) {
+                    this.y = canvas.height + this.size;
+                }
+
+                // --- Mouse Interaction ---
+                // Calculate distance between particle and mouse
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < MOUSE_INTERACTION_RADIUS) {
+                        // Push particle away from mouse
+                        this.x -= dx / 10;
+                        this.y -= dy / 10;
+                    } else {
+                        // Move particle normally
+                         this.moveParticle();
+                    }
+                } else {
+                     this.moveParticle();
+                }
+
+                this.draw();
+            }
+
+            // Handles the base movement of the particle
+            moveParticle() {
+                this.x += this.directionX * this.speed;
+                // Add a sine wave for a flowing effect
+                this.y += (this.directionY + Math.sin(this.x * 0.01) * this.waveFactor) * this.speed;
+            }
+        }
+
+        // --- Animation Functions ---
+        
+        // Create particle array
+        function init() {
+            particlesArray = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                let size = Math.random() * 2 + 0.5; // Varies particle size
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                // Random direction: -0.5 to 0.5
+                let directionX = (Math.random() - 0.5) * 1.5;
+                let directionY = (Math.random() - 0.5) * 1.5;
+                let color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            // Use a semi-transparent background to create a trail effect
+            ctx.fillStyle = 'rgba(0, 2, 26, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // --- Start ---
+        init();
+        animate();
+    </script>
+</body>
+</html>
