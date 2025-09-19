@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed 12-Page 3D Photo Album</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base styles from the original approach */
+        body {
+            background: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .album-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            /* FIX: Moved perspective here to be the direct parent of the 3D object */
+            perspective: 1500px;
+        }
+        .book {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            /* Added a subtle rotation to enhance the 3D feel */
+            transform: rotateX(10deg) rotateY(-15deg);
+            transition: transform 0.5s ease;
+        }
+        .book:hover {
+            transform: rotateX(0deg) rotateY(0deg);
+        }
+        /* Static left page that is always visible */
+        .static-left-page {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: white;
+            border-radius: 8px 0 0 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            left: 0;
+            z-index: 1;
+        }
+        /* This is the container for each flippable page */
+        .page {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform 1.2s ease-in-out;
+        }
+        .page-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            backface-visibility: hidden;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .front-face {
+            border-radius: 0 8px 8px 0;
+        }
+        .back-face {
+            border-radius: 8px 0 0 8px;
+            transform: rotateY(180deg);
+        }
+        /* Content styling */
+        .page-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        /* 12 different gradients */
+        .content-1 { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
+        .content-2 { background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); }
+        .content-3 { background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%); }
+        .content-4 { background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%); }
+        .content-5 { background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%); }
+        .content-6 { background: linear-gradient(135deg, #54a0ff 0%, #2e86de 100%); }
+        .content-7 { background: linear-gradient(135deg, #5f27cd 0%, #341f97 100%); }
+        .content-8 { background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%); }
+        .content-9 { background: linear-gradient(135deg, #ff6348 0%, #ffb142 100%); }
+        .content-10 { background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%); }
+        .content-11 { background: linear-gradient(135deg, #747d8c 0%, #2f3542 100%); }
+        .content-12 { background: linear-gradient(135deg, #7bed9f 0%, #70a1ff 100%); }
+        
+        /* The 'flipped' class triggers the page turn animation */
+        .flipped {
+            transform: rotateY(-180deg);
+        }
+        
+        /* Controls */
+        .controls {
+            position: absolute;
+            bottom: -70px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        .btn:hover:not(:disabled) {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .status {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="album-container">
+        <div class="status" id="status">Pages 1 & 2</div>
+        <div class="book" id="book">
+            <!-- Static Left Page (Page 1) -->
+            <div class="static-left-page">
+                <div class="page-content content-1">1</div>
+            </div>
+            <!-- Flippable pages will be inserted here by JS -->
+        </div>
+        <div class="controls">
+            <button class="btn" id="prevBtn" disabled>← Previous</button>
+            <button class="btn" id="nextBtn">Turn Page →</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elements ---
+            const book = document.getElementById('book');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const statusEl = document.getElementById('status');
+
+            // --- Data for the flippable pages ---
+            // Each object represents a single sheet of paper.
+            // 'front' is the right-side page you see initially.
+            // 'back' is the page on the reverse, which becomes the new left page.
+            const pagesData = [
+                { front: 2, back: 3 },
+                { front: 4, back: 5 },
+                { front: 6, back: 7 },
+                { front: 8, back: 9 },
+                { front: 10, back: 11 },
+                { front: 12, back: null } // The last page has a blank back
+            ];
+            const numPages = pagesData.length;
+
+            // --- State ---
+            let currentPage = 0;
+            let pages = []; // To hold the DOM elements for each page
+
+            /**
+             * Creates and populates the book with all the necessary page elements.
+             * This is the main fix: creating a separate element for each page turn.
+             */
+            function createBook() {
+                pagesData.forEach((data, i) => {
+                    const page = document.createElement('div');
+                    page.className = 'page';
+                    // Stack pages from back to front using z-index
+                    page.style.zIndex = numPages - i + 2; // +2 to be above the static pages
+
+                    // Create the front face of the page
+                    const frontFace = document.createElement('div');
+                    frontFace.className = 'page-face front-face';
+                    const frontContent = document.createElement('div');
+                    frontContent.className = `page-content content-${data.front}`;
+                    frontContent.textContent = data.front;
+                    frontFace.appendChild(frontContent);
+
+                    // Create the back face of the page
+                    const backFace = document.createElement('div');
+                    backFace.className = 'page-face back-face';
+                    if (data.back) {
+                        const backContent = document.createElement('div');
+                        backContent.className = `page-content content-${data.back}`;
+                        backContent.textContent = data.back;
+                        backFace.appendChild(backContent);
+                    } else {
+                        // Handle the blank back of the last page
+                        backFace.innerHTML = `<div class="page-content content-11" style="font-size: 24px;">The End</div>`;
+                    }
+                    
+                    page.appendChild(frontFace);
+                    page.appendChild(backFace);
+                    book.appendChild(page);
+                    pages.push(page);
+                });
+                updateUI();
+            }
+
+            /**
+             * Updates the status text and button states based on the current page.
+             */
+            function updateUI() {
+                // Update status text
+                if (currentPage === 0) {
+                    statusEl.textContent = `Pages 1 & 2`;
+                } else if (currentPage < numPages) {
+                    const leftPage = currentPage * 2 + 1;
+                    const rightPage = leftPage + 1;
+                    statusEl.textContent = `Pages ${leftPage} & ${rightPage}`;
+                } else {
+                     statusEl.textContent = `Pages 11 & 12`;
+                }
+
+                // Update button states
+                prevBtn.disabled = currentPage === 0;
+                nextBtn.disabled = currentPage >= numPages;
+            }
+
+            /**
+             * Flips to the next page.
+             */
+            function goNextPage() {
+                if (currentPage >= numPages) return;
+
+                const pageToFlip = pages[currentPage];
+                pageToFlip.classList.add('flipped');
+                // Bring the flipped page to the front of the left-side stack
+                pageToFlip.style.zIndex = currentPage + 3; 
+
+                currentPage++;
+                updateUI();
+            }
+
+            /**
+             * Flips to the previous page.
+             */
+            function goPrevPage() {
+                if (currentPage <= 0) return;
+
+                currentPage--;
+                const pageToFlipBack = pages[currentPage];
+                pageToFlipBack.classList.remove('flipped');
+                // Return the page to its original stacking order on the right
+                pageToFlipBack.style.zIndex = numPages - currentPage + 2;
+
+                updateUI();
+            }
+
+            // --- Event Listeners ---
+            nextBtn.addEventListener('click', goNextPage);
+            prevBtn.addEventListener('click', goPrevPage);
+
+            // --- Initialization ---
+            createBook();
+        });
+    </script>
+</body>
+</html>
