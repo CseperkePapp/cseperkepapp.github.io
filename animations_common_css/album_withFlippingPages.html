@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Album With Flipping Pages - Common CSS</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="album-style.css">
+</head>
+<body>
+  <div class="album-container">
+    <div class="status" id="status">Pages 1 & 2</div>
+    <div class="book" id="book">
+      <div class="static-left-page">
+        <div class="page-content content-1">1</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="prevBtn" disabled>← Previous</button>
+      <button class="btn" id="nextBtn">Turn Page →</button>
+    </div>
+  </div>
+  <script src="album-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Information with TMDb API</title>
+    <link rel="stylesheet" href="movie-styles.css">
+</head>
+<body>
+    <!-- Search Section -->
+    <div class="movie-search">
+        <h2>Search for a Movie</h2>
+        <form id="movie-search-form">
+            <input 
+                type="text" 
+                id="movie-search-input" 
+                placeholder="Enter movie title..."
+                required
+            >
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <!-- Movie Information Container -->
+    <div id="movie-container">
+        <!-- Movie information will be dynamically inserted here -->
+        <p>Loading movie information...</p>
+    </div>
+
+    <!-- Alternative: Multiple movie containers for comparison -->
+    <div class="movie-comparison" style="display: none;">
+        <div class="movie-row">
+            <div id="movie-1" class="movie-column"></div>
+            <div id="movie-2" class="movie-column"></div>
+        </div>
+    </div>
+
+    <script src="tmdb-api.js"></script>
+    
+    <script>
+        // Example usage - replace with your actual API key
+        const API_KEY = 'your_tmdb_api_key_here';
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // You can start with a default movie
+            // displayMovieById(603, 'movie-container'); // The Matrix
+            
+            // Or leave it empty until user searches
+            document.getElementById('movie-container').innerHTML = '<p>Search for a movie to get started!</p>';
+        });
+
+        // Example of programmatic usage
+        async function loadSpecificMovie(movieTitle) {
+            const movieDb = new MovieDatabase(API_KEY);
+            const movieDisplay = new MovieInfoDisplay('movie-container', movieDb);
+            await movieDisplay.searchAndDisplay(movieTitle);
+        }
+
+        // Example: Load movie based on URL parameter
+        function loadMovieFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('movie');
+            const movieTitle = urlParams.get('title');
+            
+            if (movieId) {
+                displayMovieById(parseInt(movieId), 'movie-container');
+            } else if (movieTitle) {
+                loadSpecificMovie(movieTitle);
+            }
+        }
+
+        // Call on page load if you want URL-based loading
+        // loadMovieFromURL();
+    </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+/* Minimal overrides for rising layout (works with common.css) */
+.header{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:3}
+.title{font-size:2rem;font-weight:300;background:linear-gradient(135deg,#fff,#E6E6FA);-webkit-background-clip:text;color:transparent;margin-bottom:10px}
+.subtitle{font-size:.9rem;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase}
+.floating-section{position:absolute;padding:20px;cursor:pointer;animation-fill-mode:forwards}
+.section-title{-webkit-background-clip:text;color:transparent;background:linear-gradient(135deg,#fff,#E6E6FA);margin-bottom:10px}
+.section-content{color:rgba(255,255,255,0.9)}
+/* simple layer classes reused from original */
+.back{width:160px;z-index:1;opacity:.6}
+.middle-back{width:180px;z-index:2;opacity:.7}
+.middle{width:200px;z-index:4;opacity:.8}
+.middle-front{width:220px;z-index:5;opacity:.9}
+.front{width:240px;z-index:6;opacity:1}
+@keyframes floatUp{0%{transform:translateY(150vh);opacity:0}27%{opacity:1}69%{opacity:1}78%{opacity:0}100%{transform:translateY(-30vh);opacity:0}}

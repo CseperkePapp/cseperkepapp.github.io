@@ -1,0 +1,11 @@
+/* overrides for lattice when using common theme */
+.content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#fff;text-align:center;pointer-events:none}
+.title{font-size:3rem;margin-bottom:1rem;text-shadow:0 0 20px rgba(255,215,0,0.5)}
+.subtitle{font-size:1.2rem;opacity:.8;text-shadow:0 0 10px rgba(74,138,160,0.5)}
+.floating-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(1px)}
+.orb-1{width:60px;height:60px;background:radial-gradient(circle,rgba(255,215,0,0.4)0%,rgba(255,215,0,0.1)50%,transparent100%);top:20%;left:10%;animation:float1 8s ease-in-out infinite}
+.orb-2{width:40px;height:40px;background:radial-gradient(circle,rgba(74,138,160,0.6)0%,rgba(74,138,160,0.2)50%,transparent100%);top:60%;right:15%;animation:float2 10s ease-in-out infinite}
+.orb-3{width:80px;height:80px;background:radial-gradient(circle,rgba(255,140,66,0.3)0%,rgba(255,140,66,0.1)50%,transparent100%);bottom:30%;left:20%;animation:float3 12s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translateY(0)translateX(0)scale(1)}25%{transform:translateY(-30px)translateX(20px)scale(1.1)}50%{transform:translateY(-60px)translateX(-10px)scale(0.9)}75%{transform:translateY(-20px)translateX(-30px)scale(1.05)}}
+@keyframes float2{0%,100%{transform:translateY(0)translateX(0)scale(1)}33%{transform:translateY(40px)translateX(-25px)scale(1.2)}66%{transform:translateY(-20px)translateX(15px)scale(0.8)}}
+@keyframes float3{0%,100%{transform:translateY(0)translateX(0)scale(1)}20%{transform:translateY(-25px)translateX(30px)scale(1.1)}40%{transform:translateY(20px)translateX(-20px)scale(0.9)}60%{transform:translateY(-40px)translateX(10px)scale(1.15)}80%{transform:translateY(10px)translateX(-40px)scale(0.95)}}

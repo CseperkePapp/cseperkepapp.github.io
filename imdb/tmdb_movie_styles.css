@@ -1,0 +1,278 @@
+/* Movie Information Component Styles */
+.movie-info {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.movie-backdrop {
+  width: 100%;
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.movie-backdrop::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+}
+
+.movie-content {
+  padding: 2rem;
+  position: relative;
+}
+
+.movie-header {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+}
+
+.movie-poster {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.movie-details {
+  flex: 1;
+}
+
+.movie-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.movie-tagline {
+  font-style: italic;
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+}
+
+.movie-meta {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.movie-meta span {
+  background: #f5f5f5;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.rating {
+  background: #ffd700 !important;
+  color: #333 !important;
+}
+
+.genres {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.genre-tag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.director {
+  margin: 1rem 0 0 0;
+  color: #555;
+}
+
+.movie-body {
+  border-top: 1px solid #eee;
+  padding-top: 2rem;
+}
+
+.movie-body section {
+  margin-bottom: 2rem;
+}
+
+.movie-body h3 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #e3f2fd;
+  padding-bottom: 0.5rem;
+}
+
+.overview p {
+  line-height: 1.6;
+  color: #555;
+  font-size: 1rem;
+}
+
+.cast-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.8rem;
+}
+
+.cast-member {
+  background: #f9f9f9;
+  padding: 0.8rem;
+  border-radius: 6px;
+  border-left: 3px solid #1976d2;
+}
+
+.review {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+}
+
+.review-author {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.review-content {
+  line-height: 1.6;
+  color: #555;
+  margin: 0;
+}
+
+.external-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+.external-links a {
+  padding: 0.8rem 1.5rem;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.imdb-link {
+  background: #f5c518;
+  color: #000;
+}
+
+.imdb-link:hover {
+  background: #e6b800;
+  transform: translateY(-2px);
+}
+
+.tmdb-link {
+  background: #01b4e4;
+  color: white;
+}
+
+.tmdb-link:hover {
+  background: #0193b8;
+  transform: translateY(-2px);
+}
+
+/* Search Form Styles */
+.movie-search {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.movie-search form {
+  display: flex;
+  gap: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.movie-search input {
+  flex: 1;
+  padding: 0.8rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.movie-search input:focus {
+  outline: none;
+  border-color: #1976d2;
+}
+
+.movie-search button {
+  padding: 0.8rem 1.5rem;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.movie-search button:hover {
+  background: #1565c0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .movie-content {
+    padding: 1rem;
+  }
+
+  .movie-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .movie-poster {
+    width: 150px;
+    height: 225px;
+  }
+
+  .movie-title {
+    font-size: 2rem;
+  }
+
+  .movie-meta {
+    justify-content: center;
+  }
+
+  .cast-list {
+    grid-template-columns: 1fr;
+  }
+
+  .external-links {
+    flex-direction: column;
+  }
+
+  .movie-search form {
+    flex-direction: column;
+  }
+}

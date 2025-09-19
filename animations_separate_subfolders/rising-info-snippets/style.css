@@ -1,0 +1,47 @@
+/* Extracted styles from rising-info-snippets.html */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { font-family: 'Cera Basic', 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%); background-attachment: fixed; color: #ffffff; overflow-x: hidden; min-height: 100vh; }
+
+.container { width: 100vw; height: 100vh; position: relative; }
+.container::after { content: ''; position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; background: linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%); pointer-events: none; z-index: 10; }
+
+.header { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 3; pointer-events: none; }
+.title { font-size: 2rem; font-weight: 300; background: linear-gradient(135deg, #ffffff, #E6E6FA, #D8BFD8); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+.subtitle { font-size: 0.8rem; color: #a0a0a0; letter-spacing: 1px; text-transform: uppercase; }
+
+/* Floating sections */
+.floating-section { position: absolute; padding: 25px 20px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid rgba(190, 166, 127, 0.2); backdrop-filter: blur(8px); cursor: pointer; animation-timing-function: linear; animation-fill-mode: forwards; overflow: hidden; position: relative; }
+.floating-section::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #bea67f, transparent); animation: shimmer 3s infinite; }
+@keyframes shimmer { 0% { left: -100%; } 100% { left: 100%; } }
+
+/* Layers */
+.floating-section.back { width: 160px; z-index: 1; opacity: 0.6; padding: 15px 12px; }
+.floating-section.back .section-content { font-size: 0.6rem !important; line-height: 1.4; }
+.floating-section.back .section-title { font-size: 0.9rem !important; }
+.floating-section.middle-back { width: 180px; z-index: 2; opacity: 0.7; padding: 18px 15px; }
+.floating-section.middle-back .section-content { font-size: 0.7rem !important; line-height: 1.5; }
+.floating-section.middle-back .section-title { font-size: 1.0rem !important; }
+.floating-section.middle { width: 200px; z-index: 4; opacity: 0.8; padding: 20px 16px; }
+.floating-section.middle .section-content { font-size: 0.8rem !important; line-height: 1.5; }
+.floating-section.middle .section-title { font-size: 1.1rem !important; }
+.floating-section.middle-front { width: 220px; z-index: 5; opacity: 0.9; padding: 22px 18px; }
+.floating-section.middle-front .section-content { font-size: 0.85rem !important; line-height: 1.6; }
+.floating-section.middle-front .section-title { font-size: 1.2rem !important; }
+.floating-section.front { width: 240px; z-index: 6; opacity: 1; padding: 25px 20px; }
+.floating-section.front .section-content { font-size: 0.9rem !important; line-height: 1.7; }
+.floating-section.front .section-title { font-size: 1.4rem !important; }
+
+/* Desktop sizes */
+@media (min-width: 768px) { .title { font-size: 2.5rem; } .subtitle { font-size: 1rem; letter-spacing: 2px; } /* larger sizes for layers omitted for brevity - kept in main repo */ }
+
+.section-title { background: linear-gradient(135deg, #ffffff, #E6E6FA); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; font-weight: 400; font-size: 1.3rem; }
+.section-content { color: #e0e0e0; line-height: 1.6; }
+
+@keyframes floatUp { 0% { transform: translateY(150vh); opacity: 0; } 27% { opacity: 1; } 69% { opacity: 1; } 78% { opacity: 0; } 100% { transform: translateY(-30vh); opacity: 0; } }
+
+.floating-section.clicked { transform: scale(1.02, 0.96) rotateX(2deg) rotateY(2deg); background: rgba(255, 255, 255, 0.08); border-color: rgba(190, 166, 127, 0.4); transition: all 0.2s ease; }
+.floating-section.paused { animation-play-state: paused; transform: scale(1.03); box-shadow: 0 10px 20px rgba(190, 166, 127, 0.3); border-color: rgba(190, 166, 127, 0.5); }
+
+.instructions { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); color: #bea67f; font-size: 0.7rem; text-align: center; z-index: 7; }
+@media (min-width: 768px) { .instructions { font-size: 0.8rem; } }

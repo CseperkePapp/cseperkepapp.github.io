@@ -1,0 +1,92 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const book = document.getElementById('book');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const statusEl = document.getElementById('status');
+
+    const pagesData = [
+        { front: 2, back: 3 },
+        { front: 4, back: 5 },
+        { front: 6, back: 7 },
+        { front: 8, back: 9 },
+        { front: 10, back: 11 },
+        { front: 12, back: null }
+    ];
+    const numPages = pagesData.length;
+    let currentPage = 0;
+    let pages = [];
+
+    function createBook() {
+        pagesData.forEach((data, i) => {
+            const page = document.createElement('div');
+            page.className = 'page';
+            page.style.zIndex = numPages - i + 2;
+
+            const frontFace = document.createElement('div');
+            frontFace.className = 'page-face front-face';
+            const frontContent = document.createElement('div');
+            frontContent.className = `page-content content-${data.front}`;
+            frontContent.textContent = data.front;
+            frontFace.appendChild(frontContent);
+
+            const backFace = document.createElement('div');
+            backFace.className = 'page-face back-face';
+            if (data.back) {
+                const backContent = document.createElement('div');
+                backContent.className = `page-content content-${data.back}`;
+                backContent.textContent = data.back;
+                backFace.appendChild(backContent);
+            } else {
+                backFace.innerHTML = `<div class="page-content content-11" style="font-size: 24px;">The End</div>`;
+            }
+            
+            page.appendChild(frontFace);
+            page.appendChild(backFace);
+            book.appendChild(page);
+            pages.push(page);
+        });
+        updateUI();
+    }
+
+    function updateUI() {
+        if (currentPage === 0) {
+            statusEl.textContent = `Pages 1 & 2`;
+        } else if (currentPage < numPages) {
+            const leftPage = currentPage * 2 + 1;
+            const rightPage = leftPage + 1;
+            statusEl.textContent = `Pages ${leftPage} & ${rightPage}`;
+        } else {
+             statusEl.textContent = `Pages 11 & 12`;
+        }
+
+        prevBtn.disabled = currentPage === 0;
+        nextBtn.disabled = currentPage >= numPages;
+    }
+
+    function goNextPage() {
+        if (currentPage >= numPages) return;
+
+        const pageToFlip = pages[currentPage];
+        pageToFlip.classList.add('flipped');
+        pageToFlip.style.zIndex = currentPage + 3; 
+
+        currentPage++;
+        updateUI();
+    }
+
+    function goPrevPage() {
+        if (currentPage <= 0) return;
+
+        currentPage--;
+        const pageToFlipBack = pages[currentPage];
+        pageToFlipBack.classList.remove('flipped');
+        pageToFlipBack.style.zIndex = numPages - currentPage + 2;
+
+        updateUI();
+    }
+
+    nextBtn.addEventListener('click', goNextPage);
+    prevBtn.addEventListener('click', goPrevPage);
+
+    createBook();
+});
