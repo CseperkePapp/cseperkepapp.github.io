@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Symmetry — a study in reflection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0f1114;--ink:#eceef2;--dim:#7c808a;--acc:#8f7fd0;--line:rgba(236,238,242,.16);--on:#0f1114}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;cursor:crosshair}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  #motif{position:fixed;left:50%;top:50%;width:0;height:0;z-index:1}
+  .c{position:absolute;left:0;top:0;transform-origin:center center;white-space:nowrap;
+    font-weight:500;font-size:clamp(38px,9vw,150px);letter-spacing:-.01em;line-height:1;
+    transform:translate(-50%,-50%);will-change:transform}
+  .c.mx{color:var(--acc)}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:300;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px);z-index:3}
+  .cap b{font-style:normal;color:var(--acc);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+  .seg-ctl{display:flex;gap:2px;border:1px solid var(--line);border-radius:20px;padding:2px}
+  .seg-ctl button{flex:1;font-family:inherit;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+    background:transparent;border:0;padding:6px;border-radius:20px;cursor:pointer;transition:.3s}
+  .seg-ctl button.active{background:var(--acc);color:var(--on)}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Abstract · Symmetry</span><a href="../index.html">← Type Motion</a></div>
+
+  <div id="motif"></div>
+  <p class="cap">Move — every gesture is answered in <b>mirror</b>.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    fold:   'quad',  // 'mirror' (2-fold) or 'quad' (4-fold)
+    spread: 1.0,     // how far the reflections travel from centre
+    spin:   6        // slow rotation of the whole motif (deg/s)
+  };
+
+  const motif=document.getElementById('motif');
+  const word='symmetry';
+  // four copies: original + mirror-x + mirror-y + mirror-xy
+  const flips=[[1,1,''],[-1,1,'mx'],[1,-1,'mx'],[-1,-1,'']];
+  const copies=flips.map(([sx,sy,cls])=>{ const c=document.createElement('div'); c.className='c '+cls; c.textContent=word; c.__s=[sx,sy]; motif.appendChild(c); return c; });
+
+  let tx=0, ty=0, px=0, py=0, moved=0, last=performance.now();
+  addEventListener('pointermove', e=>{ tx=e.clientX-innerWidth/2; ty=e.clientY-innerHeight/2; moved=0; });
+
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now; moved+=dt;
+    if(moved>1.2){ const t=now/1000; tx=Math.sin(t*0.5)*120; ty=Math.cos(t*0.37)*90; }  // idle drift
+    px+=(tx-px)*0.06; py+=(ty-py)*0.06;
+    motif.style.transform='rotate('+(now/1000*cfg.spin).toFixed(2)+'deg)';
+    const active = cfg.fold==='quad' ? 4 : 2;
+    copies.forEach((c,i)=>{
+      if(i>=active){ c.style.display='none'; return; }
+      c.style.display='block';
+      const sx=c.__s[0], sy=c.__s[1];
+      c.style.transform='translate(-50%,-50%) translate('+(sx*px*cfg.spread).toFixed(1)+'px,'+(sy*py*cfg.spread).toFixed(1)+'px) scale('+sx+','+sy+')';
+    });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const spec=[
+    {type:'toggle',key:'fold',  label:'Fold',   options:[['2-fold','mirror'],['4-fold','quad']]},
+    {type:'range', key:'spread',label:'Spread', min:.3, max:2.2,step:.1},
+    {type:'range', key:'spin',  label:'Spin',   min:0,  max:40, step:1}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      if(c.type==='range'){
+        const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+        lab.appendChild(val); row.appendChild(lab);
+        const inp=document.createElement('input'); inp.type='range';
+        inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+        inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; });
+        row.appendChild(inp);
+      } else {
+        row.appendChild(lab);
+        const g=document.createElement('div'); g.className='seg-ctl';
+        c.options.forEach(([t,v])=>{
+          const b=document.createElement('button'); b.textContent=t;
+          if(cfg[c.key]===v) b.classList.add('active');
+          b.addEventListener('click',()=>{ cfg[c.key]=v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); });
+          g.appendChild(b);
+        });
+        row.appendChild(g);
+      }
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

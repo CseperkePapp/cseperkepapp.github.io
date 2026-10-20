@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trust — a study in mutual support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#101418;--ink:#e9eef0;--dim:#7c858a;--acc:#6fb0a0;--line:rgba(233,238,240,.16);--on:#101418}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  .scene{position:relative;display:flex;align-items:flex-end;justify-content:center;gap:0;user-select:none}
+  .lean{font-weight:500;font-size:clamp(40px,10vw,168px);line-height:.85;letter-spacing:-.01em;
+    transform-origin:bottom center;will-change:transform,opacity;cursor:pointer;padding:0 .06em}
+  .ground{position:absolute;left:50%;transform:translateX(-50%);bottom:-6px;width:min(560px,80vw);height:2px;background:rgba(233,238,240,.18)}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:400;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px)}
+  .cap b{font-style:normal;color:var(--acc);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Inner states · Trust</span><a href="../index.html">← Type Motion</a></div>
+
+  <div class="scene">
+    <div class="lean" id="a">you</div>
+    <div class="lean" id="b">me</div>
+    <div class="ground"></div>
+  </div>
+
+  <p class="cap">Each holds the other up. <b>Pull one away</b> and the other falls.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    lean:    18,   // resting lean toward each other (deg)
+    support: 46,   // how firmly they hold / spring back (stiffness)
+    fall:    82    // how far the unsupported one topples (deg)
+  };
+
+  const A={el:document.getElementById('a'), side:-1, ang:0, va:0, op:1, removed:false};
+  const B={el:document.getElementById('b'), side: 1, ang:0, va:0, op:1, removed:false};
+  const objs=[A,B];
+  objs.forEach(o=>{
+    o.el.addEventListener('pointerenter',()=>o.removed=true);
+    o.el.addEventListener('pointerleave',()=>o.removed=false);
+  });
+
+  let last=performance.now();
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now;
+    const removed = A.removed ? A : (B.removed ? B : null);
+    const k=cfg.support, c=2*Math.sqrt(k)*0.55;
+    for(const o of objs){
+      let target, opT;
+      if(removed){ target = removed.side*cfg.fall; opT = (o===removed)?0.25:1; }
+      else { target = (o===A? +1 : -1)*cfg.lean; opT=1; }   // A tips toward centre (+), B toward centre (−)
+      o.va += (-k*(o.ang-target) - c*o.va)*dt; o.ang += o.va*dt;
+      o.op += (opT-o.op)*Math.min(1,8*dt);
+      o.el.style.transform='rotate('+o.ang.toFixed(2)+'deg)';
+      o.el.style.opacity=o.op.toFixed(3);
+    }
+    requestAnimationFrame(frame);
+  }
+  // start them apart so they fall together into the lean
+  A.ang=-40; B.ang=40;
+  requestAnimationFrame(frame);
+
+  const spec=[
+    {type:'range', key:'lean',    label:'Lean',    min:6,  max:32, step:1},
+    {type:'range', key:'support', label:'Support', min:12, max:120,step:2},
+    {type:'range', key:'fall',    label:'Fall',    min:40, max:110,step:2}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+      lab.appendChild(val); row.appendChild(lab);
+      const inp=document.createElement('input'); inp.type='range';
+      inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+      inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; });
+      row.appendChild(inp);
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stability — a study in resilience</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#15140f;--ink:#efeadd;--dim:#8a8578;--acc:#c69440;--line:rgba(239,234,221,.16);--on:#15140f}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  .scene{display:flex;flex-direction:column;align-items:center;user-select:none}
+  .word{font-weight:700;font-size:clamp(46px,12.5vw,190px);line-height:.9;letter-spacing:-.02em;
+    transform-origin:bottom center;will-change:transform}
+  .ground{width:min(680px,88vw);height:4px;background:var(--ink);margin-top:.22em;border-radius:3px;opacity:.9}
+  .shadow{width:min(680px,88vw);height:18px;margin-top:2px;
+    background:radial-gradient(ellipse at center top,rgba(0,0,0,.35),transparent 70%)}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:400;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px)}
+  .cap b{font-style:normal;color:var(--acc);font-weight:700}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);
+    border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+  .seg{display:flex;gap:2px;border:1px solid var(--line);border-radius:20px;padding:2px}
+  .seg button{flex:1;font-family:inherit;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+    background:transparent;border:0;padding:6px;border-radius:20px;cursor:pointer;transition:.3s}
+  .seg button.active{background:var(--acc);color:var(--on)}
+</style>
+</head>
+<body>
+  <div class="bar"><span>09 · Stability</span><a href="../index.html">← Type Motion</a></div>
+
+  <div class="scene">
+    <div class="word" id="word">stability</div>
+    <div class="ground"></div>
+    <div class="shadow"></div>
+  </div>
+
+  <p class="cap"><b>Shove it</b> — a low centre of gravity rights it at once.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  // ---------- tweakable config ----------
+  const cfg = {
+    stiffness: 210,   // stiff spring — snaps back fast
+    damping:   27,    // near-critical (2√210≈29) ⇒ little/no overshoot: 'unshaken'
+    shoveForce:340,   // impulse on click / auto
+    lean:      0.045, // how much horizontal displacement tips it
+    autoShove: true   // periodic disturbances so it demonstrates itself
+  };
+
+  // ---------- simulation (translational spring, tips as it displaces) ----------
+  const word=document.getElementById('word');
+  let x=0, vx=0, last=performance.now();
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now;
+    for(let s=0;s<2;s++){ const h=dt/2; vx+=(-cfg.stiffness*x - cfg.damping*vx)*h; x+=vx*h; }
+    word.style.transform='translateX('+x.toFixed(2)+'px) rotate('+(x*cfg.lean).toFixed(3)+'deg)';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  function shove(dir){ vx += dir*cfg.shoveForce; }
+  addEventListener('pointerdown', e=>{
+    if(e.target.closest('.panel')) return;
+    shove(e.clientX < innerWidth/2 ? -1 : 1);
+  });
+  setInterval(()=>{ if(cfg.autoShove) shove(Math.random()<.5?-1:1); }, 2100);
+
+  // ---------- control panel ----------
+  const spec=[
+    {type:'range', key:'stiffness', label:'Stiffness',  min:40, max:400, step:5},
+    {type:'range', key:'damping',   label:'Damping',    min:2,  max:60,  step:1},
+    {type:'range', key:'shoveForce',label:'Shove force',min:80, max:700, step:10},
+    {type:'range', key:'lean',      label:'Lean',       min:0,  max:.12, step:.005},
+    {type:'toggle',key:'autoShove', label:'Auto-shove', options:[['off',false],['on',true]]}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      if(c.type==='range'){
+        const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+        lab.appendChild(val); row.appendChild(lab);
+        const inp=document.createElement('input'); inp.type='range';
+        inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+        inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; });
+        row.appendChild(inp);
+      } else {
+        row.appendChild(lab);
+        const g=document.createElement('div'); g.className='seg';
+        c.options.forEach(([t,v])=>{
+          const b=document.createElement('button'); b.textContent=t;
+          if(cfg[c.key]===v) b.classList.add('active');
+          b.addEventListener('click',()=>{ cfg[c.key]=v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); });
+          g.appendChild(b);
+        });
+        row.appendChild(g);
+      }
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Focus — a study in attention</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#101012;--ink:#eef0f2;--dim:#7e808a;--acc:#6ea8ff;--line:rgba(238,240,242,.16);--on:#101012}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;height:100%;
+    -webkit-font-smoothing:antialiased;cursor:crosshair}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  #field{position:fixed;inset:0;z-index:1;overflow:hidden}
+  .fw{position:fixed;transform:translate(-50%,-50%);font-weight:500;color:var(--ink);white-space:nowrap;
+    letter-spacing:-.01em;pointer-events:none;will-change:filter,opacity,transform;transition:filter .35s ease,opacity .35s ease,transform .35s ease}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:400;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px);z-index:3;mix-blend-mode:screen}
+  .cap b{font-style:normal;color:var(--acc);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Inner states · Focus</span><a href="../index.html">← Type Motion</a></div>
+
+  <div id="field"></div>
+  <p class="cap">Clarity follows <b>attention</b>. Everything else softens.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    count:   16,    // how many competing words
+    radius:  260,   // how wide the focus falls (px)
+    maxBlur: 9,     // how soft the periphery is
+    sharpen: 0.9    // contrast of the focused word
+  };
+
+  const field=document.getElementById('field');
+  let insts=[], mx=-9999, my=-9999;
+
+  function build(){
+    field.innerHTML=''; insts=[];
+    const n=Math.round(cfg.count);
+    const cols=Math.max(1,Math.round(Math.sqrt(n*innerWidth/innerHeight)));
+    const rows=Math.ceil(n/cols);
+    let k=0;
+    for(let r=0;r<rows;r++){ for(let c=0;c<cols;c++){
+      if(k>=n) break; k++;
+      const x=(c+0.5)/cols*innerWidth + (Math.random()*2-1)*(innerWidth/cols)*0.26;
+      const y=(r+0.5)/rows*innerHeight + (Math.random()*2-1)*(innerHeight/rows)*0.26;
+      const el=document.createElement('div'); el.className='fw'; el.textContent='focus';
+      el.style.left=x+'px'; el.style.top=y+'px'; el.style.fontSize=(38+Math.random()*88)+'px';
+      field.appendChild(el); insts.push({el, cx:x, cy:y});
+    }}
+    render();
+  }
+  function render(){
+    for(const o of insts){
+      const d=Math.hypot(o.cx-mx, o.cy-my);
+      const p=Math.pow(Math.max(0,1-d/cfg.radius), 1.4);
+      o.el.style.filter='blur('+(cfg.maxBlur*(1-p)).toFixed(2)+'px)';
+      o.el.style.opacity=(0.12+cfg.sharpen*p).toFixed(3);
+      o.el.style.transform='translate(-50%,-50%) scale('+(0.94+0.16*p).toFixed(3)+')';
+    }
+  }
+  addEventListener('pointermove', e=>{ mx=e.clientX; my=e.clientY; render(); });
+  addEventListener('resize', build);
+  (document.fonts?document.fonts.ready:Promise.resolve()).then(build);
+  build();
+
+  const spec=[
+    {type:'range', key:'count',  label:'Field',   min:6,  max:36, step:1,  on:build},
+    {type:'range', key:'radius', label:'Focus radius',min:120,max:480,step:10, on:render},
+    {type:'range', key:'maxBlur',label:'Softness',min:2,  max:18, step:.5, on:render},
+    {type:'range', key:'sharpen',label:'Sharpen', min:.3, max:1,  step:.05,on:render}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+      lab.appendChild(val); row.appendChild(lab);
+      const inp=document.createElement('input'); inp.type='range';
+      inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+      inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; if(c.on)c.on(); });
+      row.appendChild(inp);
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Friction — a study in resistance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--paper:#e8e3d8;--ink:#1b1712;--dim:#8b8474;--acc:#b5462f;--line:rgba(27,23,18,.16);--on:#fff}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--paper);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  .track{position:relative;width:100%;display:flex;align-items:center;justify-content:center;user-select:none}
+  .word{font-weight:400;font-size:clamp(46px,13vw,190px);line-height:.9;letter-spacing:-.01em;transform-origin:center center;will-change:transform;white-space:nowrap}
+  .surface{position:fixed;left:0;right:0;top:calc(50% + .62em);height:2px;background:rgba(27,23,18,.22);z-index:0}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:300;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px)}
+  .cap b{font-style:normal;color:var(--acc);font-weight:400}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.35);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+  .seg{display:flex;gap:2px;border:1px solid var(--line);border-radius:20px;padding:2px}
+  .seg button{flex:1;font-family:inherit;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+    background:transparent;border:0;padding:6px;border-radius:20px;cursor:pointer;transition:.3s}
+  .seg button.active{background:var(--acc);color:var(--on)}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Physical forces · Friction</span><a href="../index.html">← Type Motion</a></div>
+
+  <div class="surface"></div>
+  <div class="track"><div class="word" id="word">friction</div></div>
+
+  <p class="cap"><b>Flick it</b> — resistance drags it to a halt.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    friction: 1500,   // deceleration (px/s²) — higher stops it sooner
+    kick:     1700,   // impulse per flick (px/s)
+    stretch:  0.16,   // how much it stretches with speed
+    restitution:0.35, // bounce off the walls
+    autoFlick:false
+  };
+
+  const word=document.getElementById('word');
+  let x=0, v=0, last=performance.now(), maxX=400;
+  function measure(){ maxX=Math.max(60,(innerWidth - word.offsetWidth)/2 - 24); }
+  addEventListener('resize',measure);
+  (document.fonts?document.fonts.ready:Promise.resolve()).then(()=>setTimeout(measure,60));
+  setTimeout(measure,400);
+
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now;
+    if(v!==0){
+      const dec=cfg.friction*dt;
+      if(Math.abs(v)<=dec) v=0; else v-=Math.sign(v)*dec;
+    }
+    x+=v*dt;
+    if(x> maxX){ x= maxX; v=-v*cfg.restitution; }
+    if(x<-maxX){ x=-maxX; v=-v*cfg.restitution; }
+    const st=1+Math.min(Math.abs(v)/2600,1)*cfg.stretch;
+    word.style.transform='translateX('+x.toFixed(2)+'px) scaleX('+st.toFixed(3)+')';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  function flick(dir){ v += dir*cfg.kick; }
+  addEventListener('pointerdown', e=>{
+    if(e.target.closest('.panel')) return;
+    flick(e.clientX < innerWidth/2 ? -1 : 1);
+  });
+  setInterval(()=>{ if(cfg.autoFlick) flick(Math.random()<.5?-1:1); }, 2400);
+
+  const spec=[
+    {type:'range', key:'friction', label:'Friction',   min:300, max:4000,step:50},
+    {type:'range', key:'kick',     label:'Flick force',min:400, max:3200,step:50},
+    {type:'range', key:'stretch',  label:'Speed stretch',min:0, max:.5, step:.02},
+    {type:'range', key:'restitution',label:'Wall bounce',min:0,max:.9,  step:.05},
+    {type:'toggle',key:'autoFlick',label:'Auto-flick', options:[['off',false],['on',true]]}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      if(c.type==='range'){
+        const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+        lab.appendChild(val); row.appendChild(lab);
+        const inp=document.createElement('input'); inp.type='range';
+        inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+        inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; });
+        row.appendChild(inp);
+      } else {
+        row.appendChild(lab);
+        const g=document.createElement('div'); g.className='seg';
+        c.options.forEach(([t,v])=>{
+          const b=document.createElement('button'); b.textContent=t;
+          if(cfg[c.key]===v) b.classList.add('active');
+          b.addEventListener('click',()=>{ cfg[c.key]=v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); });
+          g.appendChild(b);
+        });
+        row.appendChild(g);
+      }
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

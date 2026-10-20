@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Weightless — a study in variable weight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,100..900&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--paper:#f4f0e7;--ink:#1b1813;--dim:#8a8375}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--paper);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+    -webkit-font-smoothing:antialiased}
+  .lab{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim)}
+  .lab a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .lab a:hover{color:var(--ink);border-color:var(--ink)}
+
+  h1{font-size:clamp(76px,20vw,300px);line-height:.9;font-weight:400;letter-spacing:-.01em;user-select:none}
+  h1 span{display:inline-block;font-variation-settings:"opsz" 144,"wght" 300;will-change:font-variation-settings}
+  .cap{font-style:italic;font-weight:300;color:var(--dim);font-size:clamp(15px,2vw,22px);margin-top:1.4em;
+    max-width:32ch;opacity:0;animation:fade 1.6s 1.2s forwards}
+  @keyframes fade{to{opacity:1}}
+</style>
+</head>
+<body>
+  <div class="lab">
+    <span>01 · Variable weight</span>
+    <a href="../index.html">← Type Motion</a>
+  </div>
+
+  <h1 id="w" aria-label="Weightless"></h1>
+  <p class="cap">One word, one axis. The weight travels through the letters like a slow tide — nothing moves but the ink itself.</p>
+
+<script>
+(function(){
+  const word='Weightless';
+  const el=document.getElementById('w');
+  const spans=[];
+  for(const ch of word){
+    const s=document.createElement('span');
+    s.textContent=ch; el.appendChild(s); spans.push(s);
+  }
+  let mx=0.5, tx=0.5;            // cursor x, normalised & eased
+  addEventListener('pointermove',e=>{ tx=e.clientX/innerWidth; });
+
+  const N=spans.length;
+  function frame(t){
+    mx += (tx-mx)*0.06;
+    const time=t/1000;
+    for(let i=0;i<N;i++){
+      const p=i/(N-1);
+      // travelling sine wave of weight, biased toward the cursor
+      const wave=0.5+0.5*Math.sin(time*0.9 - p*3.1);
+      const focus=1-Math.min(1,Math.abs(p-mx)*2.2);   // 1 near cursor
+      const w=170 + wave*430*0.7 + focus*260;
+      const o=9 + (1-wave)*120;                        // optical size drifts too
+      spans[i].style.fontVariationSettings='"opsz" '+o.toFixed(0)+',"wght" '+Math.max(100,Math.min(900,w)).toFixed(0);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

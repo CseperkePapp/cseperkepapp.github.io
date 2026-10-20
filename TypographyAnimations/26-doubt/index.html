@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Doubt — a study in indecision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#14161b;--ink:#dfe3ea;--dim:#7d818c;--acc:#8892a8;--line:rgba(223,227,234,.16);--on:#14161b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  .word{font-weight:500;font-size:clamp(52px,15vw,230px);line-height:.9;letter-spacing:-.01em;user-select:none;display:flex}
+  .word .l{position:relative;display:inline-block}
+  .word .g{visibility:hidden}
+  .word .a,.word .b{position:absolute;left:0;top:0;transform-origin:center center;will-change:transform,opacity}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:400;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px)}
+  .cap b{font-style:normal;color:var(--acc);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Inner states · Doubt</span><a href="../index.html">← Type Motion</a></div>
+
+  <div class="word" id="word"></div>
+
+  <p class="cap">Two minds at once — it <b>can't decide</b> where to stand.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    sep:        11,   // distance between the two stances (px)
+    rot:        5,    // rotation difference (deg)
+    flicker:    6,    // how fast it leans one way or the other
+    hesitation: 520,  // avg ms before it reconsiders
+    ghost:      0.28  // how present the rejected option stays
+  };
+
+  const wordEl=document.getElementById('word');
+  const word='doubt';
+  const L=[...word].map(ch=>{
+    const l=document.createElement('span'); l.className='l';
+    const g=document.createElement('span'); g.className='g'; g.textContent=ch;
+    const a=document.createElement('span'); a.className='a'; a.textContent=ch;
+    const b=document.createElement('span'); b.className='b'; b.textContent=ch;
+    l.append(g,a,b); wordEl.appendChild(l);
+    return {a,b, c:Math.random(), cT:Math.random()<.5?0:1, next:0,
+            mul:0.7+Math.random()*0.6, rs:0.6+Math.random()*0.8, sign:Math.random()<.5?-1:1};
+  });
+  function applyStance(){
+    for(const o of L){
+      o.a.style.transform='translateX('+(-cfg.sep*o.mul).toFixed(1)+'px) rotate('+(-cfg.rot*o.rs*o.sign).toFixed(2)+'deg)';
+      o.b.style.transform='translateX('+( cfg.sep*o.mul).toFixed(1)+'px) rotate('+( cfg.rot*o.rs*o.sign).toFixed(2)+'deg)';
+    }
+  }
+  applyStance();
+
+  let last=performance.now();
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now;
+    for(const o of L){
+      if(now>o.next){ o.cT=Math.random()<.5?0:1; o.next=now+cfg.hesitation*(0.4+Math.random()*1.3); }
+      if(Math.random()<0.006) o.cT=1-o.cT;                 // a sudden second-guess
+      o.c += (o.cT-o.c)*Math.min(1,cfg.flicker*dt);
+      o.a.style.opacity=(cfg.ghost+(1-cfg.ghost)*o.c).toFixed(3);
+      o.b.style.opacity=(cfg.ghost+(1-cfg.ghost)*(1-o.c)).toFixed(3);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const spec=[
+    {type:'range', key:'sep',       label:'Separation', min:0,  max:30,  step:1,  on:applyStance},
+    {type:'range', key:'rot',       label:'Rotation°',  min:0,  max:16,  step:.5, on:applyStance},
+    {type:'range', key:'flicker',   label:'Flicker',    min:1,  max:16,  step:.5},
+    {type:'range', key:'hesitation',label:'Hesitation', min:120,max:1400,step:20},
+    {type:'range', key:'ghost',     label:'Ghost',      min:0,  max:.5,  step:.02}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+      lab.appendChild(val); row.appendChild(lab);
+      const inp=document.createElement('input'); inp.type='range';
+      inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+      inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; if(c.on)c.on(); });
+      row.appendChild(inp);
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

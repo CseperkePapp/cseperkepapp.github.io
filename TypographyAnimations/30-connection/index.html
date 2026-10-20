@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Connection — a study in the web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0e0f14;--ink:#eceef4;--dim:#7d818e;--acc:#7b8cff;--line:rgba(236,238,244,.16);--on:#0e0f14}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;cursor:crosshair}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  svg#web{position:fixed;inset:0;z-index:1;pointer-events:none}
+  .word{position:relative;z-index:2;font-weight:500;font-size:clamp(40px,10vw,150px);line-height:.9;letter-spacing:.02em;user-select:none;display:flex}
+  .word span{display:inline-block;will-change:transform}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:400;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px);z-index:3}
+  .cap b{font-style:normal;color:var(--acc);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Inner states · Connection</span><a href="../index.html">← Type Motion</a></div>
+
+  <svg id="web"></svg>
+  <div class="word" id="word"></div>
+
+  <p class="cap">Everything holds everything. <b>Tug one thread</b> and the whole web answers.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    linkDist:  230,   // how near two letters must be to be joined
+    stiffness: 60,    // how tightly the threads pull
+    pull:      2200,  // how strongly the cursor drags the web
+    damping:   5      // how quickly the web settles
+  };
+  const HOME=6, REACH=270;
+
+  const wordEl=document.getElementById('word'), svg=document.getElementById('web');
+  const word='connection';
+  const nodes=[...word].map(ch=>{ const s=document.createElement('span'); s.textContent=ch; wordEl.appendChild(s);
+    return {el:s, hx:0,hy:0, ox:0,oy:0, vx:0,vy:0, fx:0,fy:0}; });
+  let links=[], lineEls=[], mx=-9999, my=-9999;
+
+  function measure(){
+    nodes.forEach(n=>{ const r=n.el.getBoundingClientRect(); n.hx=r.left+r.width/2 - n.ox; n.hy=r.top+r.height/2 - n.oy; });
+    buildLinks();
+  }
+  function buildLinks(){
+    svg.innerHTML=''; links=[]; lineEls=[];
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+      const L=Math.hypot(nodes[i].hx-nodes[j].hx, nodes[i].hy-nodes[j].hy);
+      if(L<cfg.linkDist){
+        links.push({i,j,len:L});
+        const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('stroke','var(--acc)'); ln.setAttribute('stroke-width','1.4');
+        svg.appendChild(ln); lineEls.push(ln);
+      }
+    }
+  }
+  (document.fonts?document.fonts.ready:Promise.resolve()).then(()=>setTimeout(measure,60));
+  setTimeout(measure,400); addEventListener('resize',measure);
+  addEventListener('pointermove', e=>{ mx=e.clientX; my=e.clientY; });
+  addEventListener('pointerleave', ()=>{ mx=-9999; my=-9999; });
+  addEventListener('pointerdown', e=>{ if(e.target.closest('.panel')) return; nodes.forEach(n=>{ n.vx+=(Math.random()*2-1)*900; n.vy+=(Math.random()*2-1)*900; }); });
+
+  let last=performance.now();
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now;
+    nodes.forEach(n=>{ n.fx=-HOME*n.ox; n.fy=-HOME*n.oy; });
+    for(const L of links){
+      const a=nodes[L.i], b=nodes[L.j];
+      const ax=a.hx+a.ox, ay=a.hy+a.oy, bx=b.hx+b.ox, by=b.hy+b.oy;
+      let dx=bx-ax, dy=by-ay, d=Math.hypot(dx,dy)||1;
+      const f=(d-L.len)*cfg.stiffness, ux=dx/d, uy=dy/d;
+      a.fx+=ux*f; a.fy+=uy*f; b.fx-=ux*f; b.fy-=uy*f;
+    }
+    if(mx>-9998){
+      for(const n of nodes){ const dx=mx-(n.hx+n.ox), dy=my-(n.hy+n.oy), d=Math.hypot(dx,dy)||1;
+        if(d<REACH){ const f=cfg.pull*(1-d/REACH); n.fx+=(dx/d)*f; n.fy+=(dy/d)*f; } }
+    }
+    const damp=1-Math.min(1,cfg.damping*dt);
+    for(const n of nodes){
+      n.vx=(n.vx+n.fx*dt)*damp; n.vy=(n.vy+n.fy*dt)*damp;
+      n.ox=Math.max(-340,Math.min(340,n.ox+n.vx*dt)); n.oy=Math.max(-340,Math.min(340,n.oy+n.vy*dt));
+      n.el.style.transform='translate('+n.ox.toFixed(1)+'px,'+n.oy.toFixed(1)+'px)';
+    }
+    for(let li=0;li<links.length;li++){
+      const L=links[li], a=nodes[L.i], b=nodes[L.j], ln=lineEls[li];
+      const ax=a.hx+a.ox, ay=a.hy+a.oy, bx=b.hx+b.ox, by=b.hy+b.oy;
+      ln.setAttribute('x1',ax.toFixed(1)); ln.setAttribute('y1',ay.toFixed(1));
+      ln.setAttribute('x2',bx.toFixed(1)); ln.setAttribute('y2',by.toFixed(1));
+      const cl=Math.hypot(bx-ax,by-ay);
+      ln.setAttribute('opacity', Math.max(0.05,Math.min(0.6, 1-cl/(cfg.linkDist*1.5))).toFixed(2));
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const spec=[
+    {type:'range', key:'linkDist', label:'Link distance',min:120,max:420,step:10, on:buildLinks},
+    {type:'range', key:'stiffness',label:'Thread pull',  min:10, max:160,step:5},
+    {type:'range', key:'pull',     label:'Cursor pull',  min:400,max:5000,step:100},
+    {type:'range', key:'damping',  label:'Settle',       min:1,  max:14, step:.5}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+      lab.appendChild(val); row.appendChild(lab);
+      const inp=document.createElement('input'); inp.type='range';
+      inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+      inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; if(c.on)c.on(); });
+      row.appendChild(inp);
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

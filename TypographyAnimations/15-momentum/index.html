@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Momentum — a study in inertia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0f1217;--ink:#eef1f4;--dim:#7d818a;--acc:#5b8cff;--line:rgba(238,241,244,.16);--on:#0f1217}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;cursor:grab}
+  body:active{cursor:grabbing}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  .word{position:absolute;font-weight:500;font-size:clamp(46px,12vw,180px);line-height:.9;letter-spacing:-.02em;
+    will-change:transform;user-select:none;white-space:nowrap}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:400;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px);z-index:3}
+  .cap b{font-style:normal;color:var(--acc);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+  .seg-ctl{display:flex;gap:2px;border:1px solid var(--line);border-radius:20px;padding:2px}
+  .seg-ctl button{flex:1;font-family:inherit;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+    background:transparent;border:0;padding:6px;border-radius:20px;cursor:pointer;transition:.3s}
+  .seg-ctl button.active{background:var(--acc);color:var(--on)}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Physical forces · Momentum</span><a href="../index.html">← Type Motion</a></div>
+
+  <div class="word" id="word">momentum</div>
+
+  <p class="cap"><b>Fling it</b> — mass carries it on, coasting off the walls.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    mass:    1.6,   // heavier ⇒ coasts further, harder to stop
+    drag:    0.9,   // viscous air resistance (per second)
+    bounce:  0.82,  // energy kept when it hits a wall
+    minDrift:60     // it never fully stops — keeps drifting at least this fast (px/s)
+  };
+
+  const word=document.getElementById('word');
+  let x=0, y=0, vx=0, vy=0, last=performance.now();
+  let grabbing=false, offX=0, offY=0, tx=0, ty=0, px=0, py=0;
+  let maxX=400, maxY=300;
+  function measure(){ maxX=Math.max(40,(innerWidth - word.offsetWidth)/2 - 10); maxY=Math.max(40,(innerHeight - word.offsetHeight)/2 - 10); }
+  (document.fonts?document.fonts.ready:Promise.resolve()).then(()=>setTimeout(measure,60));
+  setTimeout(measure,400); addEventListener('resize',measure);
+
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now;
+    if(grabbing){
+      px=x; py=y;
+      x=tx; y=ty;
+      if(dt>0){ vx=(x-px)/dt; vy=(y-py)/dt; }
+    } else {
+      const k=Math.min(1,(cfg.drag/cfg.mass)*dt);
+      vx-=vx*k; vy-=vy*k;
+      // never fully stop — hold a minimum drift, keeping direction
+      if(cfg.minDrift>0){
+        const sp=Math.hypot(vx,vy);
+        if(sp<cfg.minDrift){
+          if(sp<1e-3){ const a=Math.random()*Math.PI*2; vx=Math.cos(a)*cfg.minDrift; vy=Math.sin(a)*cfg.minDrift; }
+          else { const s=cfg.minDrift/sp; vx*=s; vy*=s; }
+        }
+      }
+      x+=vx*dt; y+=vy*dt;
+      if(x> maxX){ x= maxX; vx=-vx*cfg.bounce; }
+      if(x<-maxX){ x=-maxX; vx=-vx*cfg.bounce; }
+      if(y> maxY){ y= maxY; vy=-vy*cfg.bounce; }
+      if(y<-maxY){ y=-maxY; vy=-vy*cfg.bounce; }
+    }
+    word.style.transform='translate('+x.toFixed(2)+'px,'+y.toFixed(2)+'px)';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  addEventListener('pointerdown', e=>{
+    if(e.target.closest('.panel')) return;
+    grabbing=true;
+    offX = x-(e.clientX-innerWidth/2); offY = y-(e.clientY-innerHeight/2);
+    tx=x; ty=y;
+  });
+  addEventListener('pointermove', e=>{
+    if(!grabbing) return;
+    tx=(e.clientX-innerWidth/2)+offX; ty=(e.clientY-innerHeight/2)+offY;
+  });
+  addEventListener('pointerup', ()=>{ grabbing=false; });
+
+  const spec=[
+    {type:'range', key:'mass',   label:'Mass',       min:.4, max:5,  step:.1},
+    {type:'range', key:'drag',   label:'Air drag',   min:.1, max:5,  step:.1},
+    {type:'range', key:'bounce', label:'Wall bounce',min:0,  max:.98,step:.02},
+    {type:'range', key:'minDrift',label:'Min drift',  min:0,  max:300,step:10}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      if(c.type==='range'){
+        const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+        lab.appendChild(val); row.appendChild(lab);
+        const inp=document.createElement('input'); inp.type='range';
+        inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+        inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; });
+        row.appendChild(inp);
+      } else {
+        row.appendChild(lab);
+        const g=document.createElement('div'); g.className='seg-ctl';
+        c.options.forEach(([t,v])=>{
+          const b=document.createElement('button'); b.textContent=t;
+          if(cfg[c.key]===v) b.classList.add('active');
+          b.addEventListener('click',()=>{ cfg[c.key]=v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); });
+          g.appendChild(b);
+        });
+        row.appendChild(g);
+      }
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

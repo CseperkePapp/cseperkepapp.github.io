@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rhythm — a study in the beat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..800&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0e0f13;--ink:#f0eee8;--dim:#7f7d78;--acc:#e0894a;--line:rgba(240,238,232,.16);--on:#0e0f13}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  .word{display:flex;align-items:center;font-weight:400;font-size:clamp(46px,13vw,200px);line-height:.9;letter-spacing:-.01em;user-select:none}
+  .word span{display:inline-block;transform-origin:center bottom;will-change:transform,color}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:300;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px)}
+  .cap b{font-style:normal;color:var(--acc);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Abstract · Rhythm</span><a href="../index.html">← Type Motion</a></div>
+
+  <div class="word" id="word"></div>
+
+  <p class="cap">A beat travels the word — <b>steady, then swung</b>.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    bpm:       112,   // tempo
+    intensity: 0.5,   // how hard each beat hits
+    swing:     0.2,   // off-beat delay (0 = straight)
+    decay:     4.5    // how fast a hit relaxes
+  };
+  const INK=[240,238,232], HOT=[224,137,74];
+
+  const wordEl=document.getElementById('word');
+  const word='rhythm';
+  const L=[...word].map(ch=>{ const s=document.createElement('span'); s.textContent=ch; wordEl.appendChild(s); return {el:s, hit:0}; });
+  const N=L.length;
+
+  let idx=0, nextBeat=performance.now()+300, beatNo=0, last=performance.now();
+  function frame(now){
+    let dt=Math.min((now-last)/1000,.032); last=now;
+    if(now>=nextBeat){
+      L[idx].hit=1; idx=(idx+1)%N; beatNo++;
+      const base=60000/cfg.bpm;
+      // swing: long–short–long–short (down-beats stretched, off-beats clipped)
+      const dur = (beatNo%2===0) ? base*(1+cfg.swing) : base*(1-cfg.swing);
+      nextBeat = now + dur;
+    }
+    for(const o of L){
+      o.hit=Math.max(0, o.hit - dt*cfg.decay);
+      const h=o.hit;
+      o.el.style.transform='translateY('+(-h*intensityPx()).toFixed(1)+'px) scale('+(1+h*cfg.intensity*0.5).toFixed(3)+')';
+      const col=INK.map((v,i)=>Math.round(v+(HOT[i]-v)*h));
+      o.el.style.color='rgb('+col[0]+','+col[1]+','+col[2]+')';
+    }
+    requestAnimationFrame(frame);
+  }
+  function intensityPx(){ return cfg.intensity*46; }
+  requestAnimationFrame(frame);
+
+  const spec=[
+    {type:'range', key:'bpm',      label:'Tempo (bpm)',min:40, max:200,step:2},
+    {type:'range', key:'intensity',label:'Intensity',  min:.1, max:1,  step:.05},
+    {type:'range', key:'swing',    label:'Swing',      min:0,  max:.6, step:.02},
+    {type:'range', key:'decay',    label:'Decay',      min:1.5,max:9,  step:.5}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+      lab.appendChild(val); row.appendChild(lab);
+      const inp=document.createElement('input'); inp.type='range';
+      inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+      inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; });
+      row.appendChild(inp);
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

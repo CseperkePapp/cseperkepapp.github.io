@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Structure — a study in construction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0f1720;--ink:#eaf1f8;--dim:#7c8b9c;--acc:#6fb0ff;--line:rgba(140,180,225,.18);--on:#0f1720;
+    --gridc:rgba(111,176,255,.11)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .6s ease;
+    background-image:linear-gradient(var(--gridc) 1px,transparent 1px),linear-gradient(90deg,var(--gridc) 1px,transparent 1px)}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  h1{position:relative;z-index:1;font-weight:600;font-size:clamp(52px,15vw,220px);line-height:1;letter-spacing:-.02em;user-select:none;padding:0 4vw}
+  h1 .l{position:relative;display:inline-block}
+  h1 .ghost{visibility:hidden}
+  h1 .out,h1 .fill{position:absolute;left:0;top:0;white-space:pre;will-change:transform,clip-path,opacity}
+  h1 .out{color:transparent;-webkit-text-stroke:1.8px #fff}
+  h1 .fill{color:var(--ink)}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;color:var(--dim);
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;z-index:1}
+  .cap b{color:var(--acc)}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);
+    border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--acc);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--acc);cursor:pointer}
+  .seg{display:flex;gap:2px;border:1px solid var(--line);border-radius:20px;padding:2px}
+  .seg button{flex:1;font-family:inherit;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+    background:transparent;border:0;padding:6px;border-radius:20px;cursor:pointer;transition:.3s}
+  .seg button.active{background:var(--acc);color:var(--on)}
+</style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+  <div class="bar"><span>10 · Structure</span><a href="../index.html">← Type Motion</a></div>
+
+  <h1 id="w" aria-label="structure"></h1>
+  <p class="cap"><b>Click</b> to raise it again</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  // ---------- tweakable config ----------
+  const cfg = {
+    buildMs:   900,     // per-letter construction time (outline + fill)
+    stagger:   90,      // ms between letters
+    growFrom:  0.08,    // outline's starting vertical scale (0 = from nothing)
+    strokeW:   1.8,     // outline thickness in px
+    gridSize:  60,      // grid module in px
+    hold:      1700,    // pause before auto-rebuild
+    dir:       'up',    // build direction: 'up' or 'down'
+    grid:      true,    // show the blueprint grid
+    auto:      true     // rebuild on a loop
+  };
+
+  const wEl=document.getElementById('w');
+  const grid=document.getElementById('grid');
+  const word='structure';
+  const letters=[...word].map(ch=>{
+    const l=document.createElement('span'); l.className='l';
+    const g=document.createElement('span'); g.className='ghost';
+    if(ch===' '){ g.innerHTML='&nbsp;'; l.appendChild(g); wEl.appendChild(l); return {l}; }
+    g.textContent=ch;
+    const out=document.createElement('span'); out.className='out'; out.textContent=ch; out.style.opacity='0';
+    const fill=document.createElement('span'); fill.className='fill'; fill.textContent=ch; fill.style.clipPath='inset(100% 0 0 0)';
+    l.append(g,out,fill); wEl.appendChild(l);
+    return {l,out,fill};
+  });
+
+  function applyGrid(){
+    grid.style.backgroundSize=cfg.gridSize+'px '+cfg.gridSize+'px';
+    grid.style.opacity=cfg.grid?'1':'0';
+  }
+  function applyStroke(){ letters.forEach(o=>{ if(o.out) o.out.style.webkitTextStroke=cfg.strokeW+'px #fff'; }); }
+  applyGrid(); applyStroke();
+
+  let autoTimer=null;
+  function build(){
+    if(cfg.grid) grid.style.opacity='1';
+    // 'up' grows from the baseline upward → the fill's TOP inset animates 100%→0
+    const fillStart = cfg.dir==='up' ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)';
+    const originY   = cfg.dir==='up' ? 'bottom' : 'top';   // outline grows from the baseline
+    const base      = cfg.grid ? 260 : 0;                   // let the grid draw first
+    const ease      = 'cubic-bezier(.4,0,.1,1)';
+    letters.forEach((o,idx)=>{
+      if(!o.out) return;
+      const d=base+idx*cfg.stagger;
+      o.out.style.transformOrigin='center '+originY;
+      o.out.getAnimations().forEach(a=>a.cancel());
+      o.fill.getAnimations().forEach(a=>a.cancel());
+      // phase 1 — the outline grows into place (position fixed, only vertical scale)
+      o.out.animate([
+        {opacity:0, transform:'scaleY('+cfg.growFrom+')'},
+        {opacity:1, transform:'scaleY(1)'}
+      ], {duration:cfg.buildMs*0.48, delay:d, easing:ease, fill:'both'});
+      // phase 2 — the fill reveals into the outline, bottom-up
+      o.fill.animate([
+        {clipPath:fillStart},
+        {clipPath:'inset(0 0 0 0)'}
+      ], {duration:cfg.buildMs*0.6, delay:d+cfg.buildMs*0.44, easing:ease, fill:'both'});
+    });
+    scheduleAuto();
+  }
+  function scheduleAuto(){
+    clearTimeout(autoTimer);
+    if(!cfg.auto) return;
+    const total = 260 + cfg.buildMs + cfg.stagger*letters.length + cfg.hold;
+    autoTimer=setTimeout(build, total);
+  }
+
+  addEventListener('pointerdown', e=>{ if(e.target.closest('.panel')) return; build(); });
+  (document.fonts?document.fonts.ready:Promise.resolve()).then(()=>setTimeout(build,200));
+
+  // ---------- control panel ----------
+  const spec=[
+    {type:'range', key:'buildMs', label:'Build time', min:300, max:1600, step:50, on:()=>scheduleAuto()},
+    {type:'range', key:'stagger', label:'Stagger',    min:0,   max:220,  step:10, on:()=>scheduleAuto()},
+    {type:'range', key:'growFrom',label:'Start height',min:0,  max:1,    step:.02},
+    {type:'range', key:'strokeW', label:'Outline',    min:.5,  max:5,    step:.1, on:applyStroke},
+    {type:'range', key:'gridSize',label:'Grid size',  min:24,  max:140,  step:4,  on:applyGrid},
+    {type:'toggle',key:'dir',     label:'Direction',  options:[['up','up'],['down','down']]},
+    {type:'toggle',key:'grid',    label:'Blueprint',  options:[['off',false],['on',true]], on:applyGrid},
+    {type:'toggle',key:'auto',    label:'Auto-loop',  options:[['off',false],['on',true]], on:()=>scheduleAuto()}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      if(c.type==='range'){
+        const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+        lab.appendChild(val); row.appendChild(lab);
+        const inp=document.createElement('input'); inp.type='range';
+        inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+        inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; if(c.on)c.on(); });
+        row.appendChild(inp);
+      } else {
+        row.appendChild(lab);
+        const g=document.createElement('div'); g.className='seg';
+        c.options.forEach(([t,v])=>{
+          const b=document.createElement('button'); b.textContent=t;
+          if(cfg[c.key]===v) b.classList.add('active');
+          b.addEventListener('click',()=>{ cfg[c.key]=v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); if(c.on)c.on(); });
+          g.appendChild(b);
+        });
+        row.appendChild(g);
+      }
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

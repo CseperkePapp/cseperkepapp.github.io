@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Velocity — a study in speed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#121316;--ink:#f0ede4;--dim:#75776f;--acc:#e9b949}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  #stage{position:relative;width:100%;height:1.4em;display:flex;align-items:center;justify-content:center}
+  .word{position:absolute;white-space:nowrap;transform-origin:center center;will-change:transform,opacity}
+  .word .inner{display:inline-block;font-style:italic;font-weight:600;font-size:clamp(56px,15vw,210px);line-height:1;
+    letter-spacing:-.01em;transform-origin:right center;will-change:transform,filter}
+  .word .l{display:inline-block;transform-origin:right center;will-change:transform,filter}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(20px,3.5vw,34px);text-align:center;color:var(--dim);
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+
+  .controls{position:fixed;left:50%;bottom:calc(clamp(20px,3.5vw,34px) + 26px);transform:translateX(-50%);
+    display:flex;flex-direction:column;gap:8px;align-items:center;z-index:3}
+  .toggle{display:flex;gap:2px;padding:3px;border:1px solid rgba(240,237,228,.16);border-radius:40px;
+    background:rgba(240,237,228,.03)}
+  .toggle button{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dim);background:transparent;border:0;padding:8px 15px;border-radius:40px;cursor:pointer;transition:.35s;white-space:nowrap}
+  .toggle button.active{color:var(--bg);background:var(--acc)}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <span>07 · Whoosh</span>
+    <a href="../index.html">← Type Motion</a>
+  </div>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="mblurX" x="-60%" y="-30%" width="220%" height="160%"><feGaussianBlur stdDeviation="26 0" /></filter>
+    <filter id="mblurY" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="0 26" /></filter>
+  </svg>
+
+  <div id="stage"></div>
+
+  <div class="controls">
+    <div class="toggle" id="dirToggle">
+      <button data-dir="horizontal" class="active">→ Horizontal</button>
+      <button data-dir="vertical">↓ Vertical</button>
+      <button data-dir="random">⤨ Random</button>
+    </div>
+    <div class="toggle" id="granToggle">
+      <button data-mode="word" class="active">Per word</button>
+      <button data-mode="letter">Per letter</button>
+    </div>
+  </div>
+  <p class="cap">it hits a wall</p>
+
+<script>
+(function(){
+  const words=['swift','rapid','a blur','whoosh','gone'];
+  const stage=document.getElementById('stage');
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  let i=0, gran='word', dirMode='horizontal';
+
+  const DIRS={
+    R:{axis:'x',sign: 1,origin:'right center'},
+    L:{axis:'x',sign:-1,origin:'left center'},
+    D:{axis:'y',sign: 1,origin:'center bottom'},
+    U:{axis:'y',sign:-1,origin:'center top'}
+  };
+  const BIG={x:58,y:62};
+  const KEYS=['R','L','D','U'];
+  const randDir=()=>DIRS[KEYS[Math.random()*KEYS.length|0]];
+  const blurId=d=>d.axis==='x'?'mblurX':'mblurY';
+  const U=d=>d.axis==='x'?'vw':'vh';
+  const T=(d,v)=>d.axis==='x'?`translateX(${v}${U(d)})`:`translateY(${v}${U(d)})`;
+  const Tem=(d,v)=>d.axis==='x'?`translateX(${v}em)`:`translateY(${v}em)`;
+  const S=(d,s)=>d.axis==='x'?`scaleX(${s})`:`scaleY(${s})`;
+
+  function posKF(d){const s=d.sign,b=BIG[d.axis];return[
+    {transform:T(d,-s*b),offset:0,easing:'cubic-bezier(.72,0,.42,1)'},
+    {transform:T(d,0),offset:.5},{transform:T(d,-s*0.9),offset:.64},
+    {transform:T(d,s*0.3),offset:.8},{transform:T(d,-s*0.12),offset:.91},
+    {transform:T(d,0),offset:1}];}
+  function scaleKF(d){return[
+    {transform:S(d,2.1),offset:0,easing:'cubic-bezier(.18,.7,.28,1)'},
+    {transform:S(d,1),offset:.5},{transform:S(d,0.9),offset:.64,easing:'cubic-bezier(.3,0,.4,1)'},
+    {transform:S(d,1.05),offset:.8},{transform:S(d,0.984),offset:.91},{transform:S(d,1),offset:1}];}
+  function letterKF(d){return[
+    {transform:S(d,1),offset:0},
+    {transform:`${Tem(d,d.sign*0.05)} ${S(d,0.66)}`,offset:.26,easing:'cubic-bezier(.3,0,.3,1)'},
+    {transform:S(d,1.1),offset:.55},{transform:S(d,0.95),offset:.76},{transform:S(d,1),offset:1}];}
+  function comboKF(d){const s=d.sign,b=BIG[d.axis];return[
+    {transform:`${T(d,-s*b)} ${S(d,2.0)}`,offset:0,easing:'cubic-bezier(.72,0,.42,1)'},
+    {transform:`${T(d,0)} ${S(d,1)}`,offset:.5},
+    {transform:`${T(d,-s*0.9)} ${S(d,0.9)}`,offset:.64,easing:'cubic-bezier(.3,0,.4,1)'},
+    {transform:`${T(d,s*0.3)} ${S(d,1.05)}`,offset:.8},
+    {transform:`${T(d,-s*0.12)} ${S(d,0.985)}`,offset:.91},
+    {transform:`${T(d,0)} ${S(d,1)}`,offset:1}];}
+
+  function make(txt){
+    const w=document.createElement('div');w.className='word';
+    const inner=document.createElement('span');inner.className='inner';
+    const ls=[];
+    [...txt].forEach(ch=>{const l=document.createElement('span');l.className='l';
+      if(ch===' '){l.innerHTML='&nbsp;';l.dataset.sp='1';}else l.textContent=ch;
+      inner.appendChild(l);ls.push(l);});
+    w.appendChild(inner);stage.appendChild(w);
+    return{w,inner,ls};
+  }
+  const cancel=el=>el.getAnimations().forEach(a=>a.cancel());
+
+  async function run(){
+    while(true){
+      const g=gran, dm=dirMode;
+      const {w,inner,ls}=make(words[i]);i=(i+1)%words.length;
+
+      if(g==='letter' && dm==='random'){
+        // each letter flies in from its own random direction
+        ls.forEach((l,idx)=>{
+          const d=randDir(); l.__d=d;
+          l.style.transformOrigin=d.origin; l.style.filter=`url(#${blurId(d)})`;
+          const delay=idx*28+Math.random()*70;
+          l.animate(comboKF(d),{duration:720,delay,fill:'both'});
+          l.animate([{opacity:0},{opacity:1}],{duration:150,delay,fill:'both'});
+          setTimeout(()=>{l.style.filter='none';},delay+380);
+        });
+        await wait(720+ls.length*28+250);
+      }else{
+        // whole word travels as a unit
+        const d = dm==='vertical'?DIRS.D : dm==='random'?randDir() : DIRS.R;
+        w.__d=d;
+        w.style.opacity='0';
+        inner.style.transformOrigin=d.origin;
+        inner.style.filter=`url(#${blurId(d)})`;
+        w.animate(posKF(d),{duration:720,fill:'both'});
+        w.animate([{opacity:0},{opacity:1}],{duration:200,fill:'both'});
+        if(g==='word'){
+          inner.animate(scaleKF(d),{duration:720,fill:'both'});
+          await wait(360); inner.style.filter='none';
+        }else{
+          await wait(300); inner.style.filter='none';
+          const n=ls.length;
+          ls.forEach((l,idx)=>{
+            l.style.transformOrigin=d.origin;
+            const order=d.axis==='x'?(d.sign>0?(n-1-idx):idx):idx;
+            l.animate(letterKF(d),{duration:500,delay:order*45,fill:'both'});
+          });
+        }
+      }
+
+      await wait(1250);
+
+      // exit
+      if(g==='letter' && dm==='random'){
+        ls.forEach((l,idx)=>{ const d=l.__d||DIRS.R; cancel(l);
+          l.style.transformOrigin=d.origin; l.style.filter=`url(#${blurId(d)})`;
+          l.animate([{transform:`${T(d,0)} ${S(d,1)}`,opacity:1},
+                     {transform:`${T(d,d.sign*80)} ${S(d,2.0)}`,opacity:0}],
+                    {duration:460,delay:idx*18,fill:'both',easing:'cubic-bezier(.05,.6,.25,.94)'});
+        });
+        await wait(460+ls.length*18+140);
+      }else{
+        const d=w.__d||DIRS.R; cancel(w);cancel(inner);ls.forEach(cancel);
+        ls.forEach(l=>l.style.transform='none');
+        inner.style.transformOrigin=d.origin; inner.style.filter=`url(#${blurId(d)})`;
+        w.animate([{transform:T(d,0),opacity:1},{transform:T(d,d.sign*80),opacity:0}],
+                  {duration:460,fill:'both',easing:'cubic-bezier(.05,.6,.25,.94)'});
+        inner.animate([{transform:S(d,1)},{transform:S(d,2.2)}],
+                  {duration:460,fill:'both',easing:'cubic-bezier(.34,0,.7,.5)'});
+        await wait(480);
+      }
+      w.remove();
+      await wait(110);
+    }
+  }
+
+  function wire(id,attr,set){
+    document.querySelectorAll('#'+id+' button').forEach(b=>b.addEventListener('click',()=>{
+      set(b.dataset[attr]);
+      document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('active',x===b));
+    }));
+  }
+  wire('granToggle','mode',v=>gran=v);
+  wire('dirToggle','dir',v=>dirMode=v);
+
+  (document.fonts?document.fonts.ready:Promise.resolve()).then(()=>setTimeout(run,150));
+})();
+</script>
+</body>
+</html>

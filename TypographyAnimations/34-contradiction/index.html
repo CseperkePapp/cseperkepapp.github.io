@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contradiction — a study in the paradox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#121012;--ink:#ececec;--dim:#807c80;--a1:#d04f8f;--a2:#4fb0d0;--line:rgba(236,236,236,.16);--on:#121012}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Fraunces",serif;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+  .bar{position:fixed;top:clamp(18px,3vw,34px);left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 clamp(18px,3vw,34px);font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);z-index:3}
+  .bar a{color:var(--dim);text-decoration:none;border-bottom:1px solid transparent;transition:.4s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+
+  .stack{position:relative;user-select:none}
+  .copy{position:absolute;left:50%;top:50%;white-space:nowrap;font-weight:500;font-size:clamp(42px,11vw,180px);
+    letter-spacing:-.01em;line-height:1;transform-origin:center center;will-change:transform;mix-blend-mode:screen}
+  .copy.a{color:var(--a1)} .copy.b{color:var(--a2)}
+  /* an invisible copy holds the layout box so the stack is centred */
+  .ghost{visibility:hidden;font-weight:500;font-size:clamp(42px,11vw,180px);letter-spacing:-.01em;line-height:1;white-space:nowrap}
+
+  .cap{position:fixed;left:0;right:0;bottom:clamp(22px,4vw,40px);text-align:center;font-style:italic;font-weight:300;
+    color:var(--dim);font-size:clamp(14px,1.8vw,20px)}
+  .cap b{font-style:normal;color:var(--a1);font-weight:500}
+
+  .panel{position:fixed;top:calc(clamp(18px,3vw,34px) + 32px);right:clamp(18px,3vw,34px);z-index:4;width:224px;
+    font-family:"Space Mono",monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer;
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  .panel .head .tw{color:var(--ink)}
+  .panel .body{padding:2px 13px 14px;display:flex;flex-direction:column;gap:13px}
+  .panel.collapsed .body{display:none}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .row label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+  .row label .val{color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--a1);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:var(--a1);cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Abstract · Contradiction</span><a href="../index.html">← Type Motion</a></div>
+
+  <div class="stack">
+    <span class="ghost">contradiction</span>
+    <div class="copy a" id="a">contradiction</div>
+    <div class="copy b" id="b">contradiction</div>
+  </div>
+
+  <p class="cap">Two truths at once — the word <b>at war with itself</b>.</p>
+
+  <div class="panel" id="panel">
+    <div class="head" id="panelHead"><span>Parameters</span><span class="tw">tweak ▾</span></div>
+    <div class="body" id="panelBody"></div>
+  </div>
+
+<script>
+(function(){
+  const cfg = {
+    amp:   1.0,   // strength of the opposition
+    speed: 0.8,   // how fast the two argue
+    ghost: 0.85   // presence of each copy
+  };
+
+  const A=document.getElementById('a'), B=document.getElementById('b');
+  function frame(now){
+    const t=now/1000, s=Math.sin(t*cfg.speed*Math.PI), a=cfg.amp;
+    A.style.opacity=cfg.ghost; B.style.opacity=cfg.ghost;
+    // A grows / rises / leans one way; B does the exact opposite, simultaneously
+    A.style.transform='translate(-50%,-50%) translateY('+(-14*a*s).toFixed(1)+'px) scale('+(1+0.09*a*s).toFixed(3)+',1) skewX('+(7*a*s).toFixed(2)+'deg)';
+    B.style.transform='translate(-50%,-50%) translateY('+( 14*a*s).toFixed(1)+'px) scale('+(1-0.09*a*s).toFixed(3)+',1) skewX('+(-7*a*s).toFixed(2)+'deg)';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const spec=[
+    {type:'range', key:'amp',   label:'Opposition',min:0,  max:2,  step:.1},
+    {type:'range', key:'speed', label:'Speed',     min:.2, max:2.5,step:.1},
+    {type:'range', key:'ghost', label:'Presence',  min:.3, max:1,  step:.05}
+  ];
+  buildPanel(document.getElementById('panelBody'), spec, cfg);
+  const panel=document.getElementById('panel');
+  document.getElementById('panelHead').addEventListener('click',()=>panel.classList.toggle('collapsed'));
+
+  function buildPanel(root, spec, cfg){
+    spec.forEach(c=>{
+      const row=document.createElement('div'); row.className='row';
+      const lab=document.createElement('label'); lab.textContent=c.label;
+      const val=document.createElement('span'); val.className='val'; val.textContent=cfg[c.key];
+      lab.appendChild(val); row.appendChild(lab);
+      const inp=document.createElement('input'); inp.type='range';
+      inp.min=c.min; inp.max=c.max; inp.step=c.step; inp.value=cfg[c.key];
+      inp.addEventListener('input',()=>{ cfg[c.key]=parseFloat(inp.value); val.textContent=inp.value; });
+      row.appendChild(inp);
+      root.appendChild(row);
+    });
+  }
+})();
+</script>
+</body>
+</html>

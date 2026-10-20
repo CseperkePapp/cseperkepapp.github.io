@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Type Motion — an atlas of kinetic type</title>
+<meta name="description" content="A growing atlas of kinetic typography — motion as craft, as physics, and as meaning." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{--paper:#efeae0;--ink:#1a1712;--dim:#8b8474;--acc:#2f6b5e;--line:rgba(26,23,18,.13)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:"Fraunces",serif;-webkit-font-smoothing:antialiased}
+  .bar{display:flex;justify-content:space-between;align-items:baseline;padding:clamp(18px,3vw,34px);
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+
+  .hero{padding:clamp(30px,7vw,90px) clamp(22px,5vw,50px) clamp(20px,5vw,64px);max-width:1100px}
+  .kick{font-family:"Space Mono";font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--acc);margin-bottom:1.4em}
+  h1{font-weight:300;font-size:clamp(52px,11vw,168px);line-height:.9;letter-spacing:-.015em}
+  h1 em{font-style:italic;color:var(--acc)}
+  .lede{font-weight:300;font-style:italic;font-size:clamp(17px,2.2vw,25px);color:var(--dim);max-width:42ch;margin-top:1.3em;line-height:1.5}
+
+  .list{max-width:1100px;margin:0 auto;padding:0 clamp(22px,5vw,50px) clamp(50px,8vw,120px)}
+  .sec{margin-top:clamp(34px,5vw,68px)}
+  .sec-h{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .sec-h .rn{font-family:"Space Mono";font-size:12px;letter-spacing:.2em;color:var(--acc)}
+  .sec-h h2{font-weight:300;font-size:clamp(26px,4.4vw,50px);letter-spacing:-.01em}
+  .sec-h p{font-family:"Space Mono";font-size:10px;letter-spacing:.08em;color:var(--dim);margin-left:auto;text-transform:uppercase}
+
+  .study{display:grid;grid-template-columns:1fr auto;gap:clamp(16px,3vw,44px);align-items:baseline;
+    text-decoration:none;color:inherit;border-bottom:1px solid var(--line);padding:clamp(18px,2.6vw,28px) 0;transition:.5s}
+  .study:hover{padding-left:14px;padding-right:14px;background:rgba(47,107,94,.05)}
+  .study .name{font-weight:300;font-size:clamp(26px,4.4vw,52px);line-height:1;letter-spacing:-.01em;transition:.4s}
+  .study:hover .name{color:var(--acc);font-style:italic}
+  .study .tech{font-family:"Space Mono";font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:.7em}
+  .study .arrow{font-size:20px;color:var(--dim);transition:.5s;align-self:center}
+  .study:hover .arrow{color:var(--ink);transform:translate(6px,-2px)}
+  .soon{font-family:"Space Mono";font-size:11px;letter-spacing:.1em;color:var(--dim);padding:16px 0;text-transform:uppercase;line-height:1.8}
+  .soon b{color:var(--ink);font-weight:400}
+
+  footer{padding:clamp(26px,5vw,50px);border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    font-family:"Space Mono";font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+
+  @media(max-width:680px){.study{grid-template-columns:1fr}.study .arrow{display:none}}
+</style>
+</head>
+<body>
+  <div class="bar"><span>Type Motion</span><span>Thirty-five studies · complete</span></div>
+
+  <section class="hero">
+    <div class="kick">Kinetic typography</div>
+    <h1>Motion as <em>meaning</em>.</h1>
+    <p class="lede">A growing atlas of small studies in animated type — first as craft, then as physics, then as ideas a word can embody. Each is a single concept with its own live controls to tune. Built slowly, on purpose.</p>
+  </section>
+
+  <div class="list">
+
+    <div class="sec">
+      <div class="sec-h"><span class="rn">I</span><h2>Kinetic craft</h2><p>Motion as technique</p></div>
+      <a class="study" href="01-weight/index.html"><div><div class="name">Weightless</div><div class="tech">Variable-font weight, travelling as a wave</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="02-reveal/index.html"><div><div class="name">On Reading</div><div class="tech">Line-mask reveal, choreographed on scroll</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="03-magnetic/index.html"><div><div class="name">Closer</div><div class="tech">Letters that lean toward the cursor · spring physics</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="04-rotator/index.html"><div><div class="name">Substitution</div><div class="tech">Masked vertical word-swap with width morph</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="05-scatter/index.html"><div><div class="name">Serendipity</div><div class="tech">Letters that tumble into place — and twitch on a whim</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="06-bounce/index.html"><div><div class="name">Buoyant</div><div class="tech">Elastic drop-in with a settling bounce</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="07-whoosh/index.html"><div><div class="name">Velocity</div><div class="tech">Arriving at speed · directional motion blur · toggles</div></div><div class="arrow">↗</div></a>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="rn">II</span><h2>Physical forces</h2><p>Type that obeys physics</p></div>
+      <a class="study" href="08-balance/index.html"><div><div class="name">Balance</div><div class="tech">Settles to rest — until raining triangles disrupt it again</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="09-stability/index.html"><div><div class="name">Stability</div><div class="tech">Shove it and it rights itself, unshaken</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="11-gravity/index.html"><div><div class="name">Gravity</div><div class="tech">Hangs, sags, and swings back to rest</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="12-tension/index.html"><div><div class="name">Tension</div><div class="tech">A taut string set ringing by a pluck</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="13-friction/index.html"><div><div class="name">Friction</div><div class="tech">Skids in and grinds to a halt</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="14-elasticity/index.html"><div><div class="name">Elasticity</div><div class="tech">Grab and pull — it snaps back with a bouncy wobble</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="15-momentum/index.html"><div><div class="name">Momentum</div><div class="tech">Fling it and it coasts on, bouncing off the walls</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="16-fragility/index.html"><div><div class="name">Fragility</div><div class="tech">A touch shatters it into shards — then it mends</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="17-pressure/index.html"><div><div class="name">Pressure</div><div class="tech">Plates squeeze it condensed; it resists and springs free</div></div><div class="arrow">↗</div></a>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="rn">III</span><h2>Time &amp; change</h2><p>Motion across duration</p></div>
+      <a class="study" href="10-structure/index.html"><div><div class="name">Structure</div><div class="tech">Constructed letter by letter — outline, then fill, on a grid</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="18-growth/index.html"><div><div class="name">Growth</div><div class="tech">Sprouts from the baseline and sways, alive</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="19-decay/index.html"><div><div class="name">Decay</div><div class="tech">Erodes over time, shedding flakes — hover hastens it</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="20-memory/index.html"><div><div class="name">Memory</div><div class="tech">Fades when ignored; attention keeps it vivid</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="21-patience/index.html"><div><div class="name">Patience</div><div class="tech">Completes imperceptibly — rushing resets it</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="22-entropy/index.html"><div><div class="name">Entropy</div><div class="tech">Order drifts to chaos; a click restores it, briefly</div></div><div class="arrow">↗</div></a>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="rn">IV</span><h2>Inner states</h2><p>Motion as feeling</p></div>
+      <a class="study" href="23-calm/index.html"><div><div class="name">Calm</div><div class="tech">A slow, even breath — nothing sudden</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="24-anxiety/index.html"><div><div class="name">Anxiety</div><div class="tech">A tremor that winds tighter, then releases</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="25-focus/index.html"><div><div class="name">Focus</div><div class="tech">Clarity follows the cursor; the rest blurs</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="26-doubt/index.html"><div><div class="name">Doubt</div><div class="tech">Two stances at once — it can't commit</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="27-courage/index.html"><div><div class="name">Courage</div><div class="tech">Falters at the brink, then leaps across</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="28-restraint/index.html"><div><div class="name">Restraint</div><div class="tech">Strains with all its might and barely moves</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="29-trust/index.html"><div><div class="name">Trust</div><div class="tech">Two words hold each other up — pull one, the other falls</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="30-connection/index.html"><div><div class="name">Connection</div><div class="tech">A living web of threads that answers every tug</div></div><div class="arrow">↗</div></a>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><span class="rn">V</span><h2>Abstract &amp; relational</h2><p>Motion as structure of thought</p></div>
+      <a class="study" href="31-hierarchy/index.html"><div><div class="name">Hierarchy</div><div class="tech">Letters ranked by scale — click to reorder the order</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="32-symmetry/index.html"><div><div class="name">Symmetry</div><div class="tech">Every gesture answered in mirror · 2- or 4-fold</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="33-rhythm/index.html"><div><div class="name">Rhythm</div><div class="tech">A beat travels the word — steady, then swung</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="34-contradiction/index.html"><div><div class="name">Contradiction</div><div class="tech">Two opposed motions at once — at war with itself</div></div><div class="arrow">↗</div></a>
+      <a class="study" href="35-silence/index.html"><div><div class="name">Silence</div><div class="tech">A stillness that swallows every disturbance</div></div><div class="arrow">↗</div></a>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Type Motion</span>
+    <span>Every study has live controls · self-contained</span>
+    <span>Built with Claude Opus</span>
+  </footer>
+</body>
+</html>
